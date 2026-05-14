@@ -1,0 +1,58 @@
+# MetaVault - 资产管理工具
+
+## 项目概述
+统一管理物理资产、数字资产、产品订阅的 Web 应用。核心价值：数据打通、关联追踪、智能提醒。移动端适配。
+
+## 技术栈
+- 后端：Node.js + Express 5 + better-sqlite3
+- 前端：React 19 + TypeScript + Vite + Tailwind CSS v4
+- UI：shadcn/ui（简约留白风格）
+- 数据获取：React Query v5
+- 路由：React Router v7
+- 包管理：pnpm workspace monorepo
+
+## 目录结构
+```
+/client       - React前端（Vite + Tailwind + shadcn/ui）
+  src/
+    components/   UI 组件（asset / supplier / dashboard / import / export / layout）
+    hooks/        React Query hooks
+    lib/          API 封装（api-client + api-*）
+    types/        TypeScript 类型
+/server       - Node.js后端（Express + better-sqlite3）
+  src/
+    db/           数据库初始化（init.sql + init.ts）
+    routes/       REST API 路由（assets / suppliers / relations / notifications / import / dashboard / export）
+    services/     提醒扫描服务
+    middleware/    错误处理
+/docs         - 产品文档（PRD / 技术设计）
+```
+
+## 开发命令
+- `pnpm dev` — 同时启动前后端
+- `pnpm dev:client` — 仅前端（localhost:5174）
+- `pnpm dev:server` — 仅后端（localhost:3001）
+- `pnpm build` — 构建前后端
+
+## 功能清单
+- 资产 CRUD（物理/数字/订阅三类，扩展字段 JSON 存储）
+- 优秀供应商管理（CRUD + 收藏）
+- 资产关联（depends_on / contains / bound_to / related_to）
+- 提醒系统（6 种类型，启动时 + 每小时自动扫描）
+- 统计仪表盘（总览 / 订阅费用 / 健康度）
+- 数据导入（CSV / Excel，字段映射 + 预览）
+- 数据导出（Excel 格式导出资产和供应商数据）
+- 全局搜索（Header 搜索栏驱动资产列表筛选）
+- 移动端适配（<768px 底部 Tab，>=768px 侧边栏）
+
+## 移动端适配
+- < 768px：底部 Tab 导航，搜索图标点击展开
+- >= 768px：侧边栏常驻，搜索框常显
+- 使用 100dvh 视口单位 + safe-area-inset-bottom
+
+## 开发规范
+- 文档先行：产品变更先改文档，再改代码
+- 中文写文档和注释，代码标识符用英文
+- 提交信息格式：`type(scope): description`，type包括 feat/fix/docs/refactor
+- 币种默认CNY，MVP不存敏感凭证
+- 全部使用参数化查询防SQL注入

@@ -1,0 +1,1 @@
+{"name": "metavault", "private": true, "scripts": {"dev": "pnpm -r --parallel run dev", "dev:client": "pnpm --filter @metavault/client run dev", "dev:server": "pnpm --filter @metavault/server run dev", "build": "pnpm -r run build"}}

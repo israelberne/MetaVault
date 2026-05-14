@@ -1,0 +1,26 @@
+node_modules/
+dist/
+data/
+uploads/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug / temp
+screenshots/
+*.log
