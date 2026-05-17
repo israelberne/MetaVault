@@ -46,7 +46,8 @@ function AssetDetail() {
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
               <Badge variant="outline">{typeLabels[asset.type]}</Badge>
               <Badge>{statusLabels[asset.status]}</Badge>
-            <span>{asset.category}</span>
+              <span>{asset.category}</span>
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
@@ -109,6 +110,12 @@ function AssetDetail() {
               {ext.amount != null && <div><span className="text-muted-foreground">每期费用：</span>¥{Number(ext.amount).toLocaleString()}</div>}
               {ext.next_billing_date && <div><span className="text-muted-foreground">下次扣费：</span>{ext.next_billing_date as string}</div>}
               {ext.trial_end && <div><span className="text-muted-foreground">试用到期：</span>{ext.trial_end as string}</div>}
+              {ext.screenshot_url && (
+                <div className="md:col-span-2">
+                  <span className="text-muted-foreground">订阅截图：</span>
+                  <img src={ext.screenshot_url as string} alt="订阅截图" className="mt-1 max-w-xs rounded-md border" />
+                </div>
+              )}
             </>
           )}
           {!Object.keys(ext).length && <div className="text-muted-foreground">无扩展信息</div>}

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -18,6 +19,9 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// 提供上传文件静态访问
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/api/assets", assetsRouter);
 app.use("/api/suppliers", suppliersRouter);

@@ -33,3 +33,34 @@ export function updateAsset(id: string, input: AssetInput): Promise<Asset> {
 export function deleteAsset(id: string): Promise<void> {
   return apiFetch(`/assets/${id}`, { method: "DELETE" });
 }
+
+export async function uploadScreenshot(assetId: string, file: File): Promise<{ screenshot_url: string }> {
+  const formData = new FormData();
+  formData.append("screenshot", file);
+  const res = await fetch(`/api/assets/${assetId}/screenshot`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("截图上传失败");
+  return res.json();
+}
+
+export interface OcrResult {
+  service_name?: string;
+  amount?: number;
+  currency?: string;
+  billing_cycle?: string;
+  next_billing_date?: string;
+  raw_text?: string;
+}
+
+export async function ocrRecognize(file: File): Promise<OcrResult> {
+  const formData = new FormData();
+  formData.append("screenshot", file);
+  const res = await fetch("/api/assets/ocr", {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("OCR 识别失败");
+  return res.json();
+}

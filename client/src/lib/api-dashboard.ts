@@ -20,6 +20,12 @@ export interface HealthOverview {
   expiringDetails: Array<{ id: string; name: string; type: string; ext: unknown }>;
 }
 
+export interface TrendItem {
+  month: string;
+  type: string;
+  monthly_cost: number;
+}
+
 export function fetchDashboardOverview(): Promise<DashboardOverview> {
   return apiFetch<DashboardOverview>("/dashboard/overview");
 }
@@ -30,4 +36,9 @@ export function fetchSubscriptionSummary(): Promise<SubscriptionSummary> {
 
 export function fetchHealthOverview(): Promise<HealthOverview> {
   return apiFetch<HealthOverview>("/dashboard/health");
+}
+
+export function fetchDashboardTrends(months?: number): Promise<TrendItem[]> {
+  const query = months ? `?months=${months}` : "";
+  return apiFetch<TrendItem[]>(`/dashboard/trends${query}`);
 }

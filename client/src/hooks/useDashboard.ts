@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDashboardOverview, fetchSubscriptionSummary, fetchHealthOverview } from "@/lib/api-dashboard";
+import {
+  fetchDashboardOverview,
+  fetchSubscriptionSummary,
+  fetchHealthOverview,
+  fetchDashboardTrends,
+} from "@/lib/api-dashboard";
 
 export function useDashboardOverview() {
   return useQuery({
@@ -19,5 +24,12 @@ export function useHealthOverview() {
   return useQuery({
     queryKey: ["dashboard", "health"],
     queryFn: fetchHealthOverview,
+  });
+}
+
+export function useDashboardTrends(months?: number) {
+  return useQuery({
+    queryKey: ["dashboard", "trends", months],
+    queryFn: () => fetchDashboardTrends(months),
   });
 }

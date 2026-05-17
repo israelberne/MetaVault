@@ -73,4 +73,35 @@ router.get("/health", async (_req: Request, res: Response) => {
   res.json({ unreadNotifications, expiringAssets: expiringAssets.length, expiringDetails: expiringAssets });
 });
 
+// GET /api/dashboard/trends — 近12个月订阅费用趋势
+router.get("/trends", async (_req: Request, res: Response) => {
+  const db = await getDb();
+  const months = Number(_req.query.months) || 12;
+
+  // 取所有活跃订阅资产，在 JS 中计算月费用并按月聚合
+  const subs = db.prepare(
+    `SELECT ext, created_at FROM assets WHERE type = 'subscription' AND status = 'active'`
+  ).all() as Record<string, unknown>[];
+
+  const monthMap = new Map<string, number>();
+  for (const row of subs) {
+    const ext = JSON.parse(row.ext as string || "{}") as Record<string, unknown>;
+    const amount = Number(ext.amount ?? 0);
+    const cycle = String(ext.billing_cycle ?? "monthly");
+    let monthly = 0;
+    if (cycle === "monthly") monthly = amount;
+    else if (cycle === "yearly") monthly = amount / 12;
+
+    const month = (row.created_at as string).slice(0, 7);
+    monthMap.set(month, (monthMap.get(month) ?? 0) + monthly);
+  }
+
+  const result = Array.from(monthMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-months)
+    .map(([month, cost]) => ({ month, monthly_cost: Math.round(cost * 100) / 100 }));
+
+  res.json(result);
+});
+
 export default router;

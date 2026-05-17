@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { getDb } from "../db/init.js";
+import { getVapidPublicKey } from "../services/push-service.js";
 
 const router = Router();
 

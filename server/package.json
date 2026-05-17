@@ -1,1 +1,31 @@
-{"name": "@metavault/server", "version": "0.1.0", "type": "module", "scripts": {"dev": "tsx watch src/index.ts", "build": "tsc", "start": "node dist/index.js"}, "dependencies": {"better-sqlite3": "^11", "cors": "^2", "express": "^5", "multer": "^1", "uuid": "^10", "xlsx": "^0.18"}, "devDependencies": {"@types/better-sqlite3": "^7", "@types/cors": "^2", "@types/express": "^5", "@types/multer": "^1", "@types/uuid": "^10", "tsx": "^4", "typescript": "~5.8.0"}}
+{
+  "name": "@metavault/server",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11",
+    "cors": "^2",
+    "express": "^5",
+    "multer": "^1",
+    "uuid": "^10",
+    "xlsx": "^0.18",
+    "web-push": "^3.6.7",
+    "dotenv": "^16",
+    "tesseract.js": "^5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7",
+    "@types/cors": "^2",
+    "@types/express": "^5",
+    "@types/multer": "^1",
+    "@types/uuid": "^10",
+    "tsx": "^4",
+    "typescript": "~5.8.0",
+    "@types/web-push": "^3"
+  }
+}

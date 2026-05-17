@@ -148,7 +148,7 @@ CREATE INDEX idx_notifications_trigger ON notifications(trigger_date);
 CREATE INDEX idx_notifications_unread ON notifications(is_read, is_dismissed);
 ```
 
-#### screenshots（截图表）
+#### screenshots（截图表）— 未实现，预留设计
 
 ```sql
 CREATE TABLE screenshots (
@@ -206,10 +206,10 @@ client/src/
 │   │   └── SupplierForm.tsx    # 供应商表单
 │   ├── dashboard/
 │   │   └── Dashboard.tsx       # 仪表盘（统计卡片+分布+订阅+健康）
-│   └── import/
-│       └── ImportWizard.tsx    # 导入向导（上传→预览→映射→导入）
-│   └── export/
-│       └── ExportPage.tsx      # 数据导出（资产/供应商Excel导出）
+│   ├── import/
+│   │   └── ImportWizard.tsx    # 导入向导（上传→预览→映射→导入）
+│   ├── export/
+│   │   └── ExportPage.tsx      # 数据导出（资产/供应商Excel导出）
 ├── types/
 │   └── asset.ts                # 资产类型定义
 └── index.css                   # Tailwind + shadcn/ui 主题

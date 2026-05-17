@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Upload, Camera } from "lucide-react";
 import { useAsset, useCreateAsset, useUpdateAsset } from "@/hooks/useAssets";
+import { ocrRecognize } from "@/lib/api-assets";
+import type { OcrResult } from "@/lib/api-assets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +35,47 @@ const categories: Record<AssetType, string[]> = {
   digital: ["digital.domain", "digital.course", "digital.ebook", "digital.software_license", "digital.account", "digital.other"],
   subscription: ["subscription.saas", "subscription.membership", "subscription.cloud_service", "subscription.streaming", "subscription.insurance", "subscription.other"],
 };
+
+function ScreenshotOcr({ onOcrResult }: { onOcrResult: (r: OcrResult) => void }) {
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setOcrLoading(true);
+    try {
+      const result = await ocrRecognize(file);
+      setOcrResult(result);
+      onOcrResult(result);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "OCR 识别失败");
+    }
+    setOcrLoading(false);
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <label className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer hover:bg-accent">
+          <Upload className="h-4 w-4" />
+          {ocrLoading ? "识别中..." : "上传截图识别"}
+          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={ocrLoading} />
+        </label>
+      </div>
+      {ocrResult && (
+        <div className="rounded-md border p-3 text-sm space-y-1">
+          <p className="font-medium">识别结果：</p>
+          {ocrResult.service_name && <p>服务名：{ocrResult.service_name}</p>}
+          {ocrResult.amount != null && <p>金额：¥{ocrResult.amount}</p>}
+          {ocrResult.billing_cycle && <p>计费周期：{ocrResult.billing_cycle === "monthly" ? "月付" : ocrResult.billing_cycle === "yearly" ? "年付" : ocrResult.billing_cycle}</p>}
+          {ocrResult.next_billing_date && <p>下次扣费：{ocrResult.next_billing_date}</p>}
+          <p className="text-muted-foreground">已自动填入表单，可手动修改</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function AssetForm() {
   const navigate = useNavigate();
@@ -259,6 +303,21 @@ function AssetForm() {
           <div className="space-y-2">
             <Label>试用到期日</Label>
             <Input type="date" value={(form.ext as Record<string, unknown>).trial_end as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, trial_end: e.target.value } }))} />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label>订阅截图（OCR 自动识别）</Label>
+            <ScreenshotOcr onOcrResult={(r) => {
+              setForm((f) => ({
+                ...f,
+                name: r.service_name ?? f.name,
+                ext: {
+                  ...f.ext,
+                  ...(r.amount != null && { amount: r.amount }),
+                  ...(r.billing_cycle && { billing_cycle: r.billing_cycle }),
+                  ...(r.next_billing_date && { next_billing_date: r.next_billing_date }),
+                },
+              }));
+            }} />
           </div>
         </div>
       )}

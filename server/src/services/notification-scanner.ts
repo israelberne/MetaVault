@@ -1,4 +1,5 @@
 import { getDb } from "../db/init.js";
+import { sendPushNotification } from "./push-service.js";
 
 export async function scanNotifications(): Promise<number> {
   const db = await getDb();
@@ -83,5 +84,14 @@ export async function scanNotifications(): Promise<number> {
   });
 
   transaction();
+
+  // 有新通知时推送
+  if (count > 0) {
+    sendPushNotification({
+      title: "MetaVault 提醒",
+      body: count > 1 ? `你有 ${count} 条新提醒` : "你有一条新的资产提醒",
+    }).catch(() => {});
+  }
+
   return count;
 }

@@ -25,6 +25,7 @@ export interface SubscriptionExt {
   next_billing_date?: string;
   amount?: number;
   trial_end?: string;
+  screenshot_url?: string;
 }
 
 export interface Asset {

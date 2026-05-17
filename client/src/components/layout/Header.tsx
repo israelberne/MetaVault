@@ -1,126 +1,182 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bell, Search, X, Check, EyeOff } from "lucide-react";
+import { Bell, Search, X, BellOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { useNotifications, useMarkRead, useDismiss } from "@/hooks/useNotifications";
+import { Button } from "@/components/ui/button";
+import {
+  getVapidPublicKey,
+  subscribePush,
+  unsubscribePush,
+} from "@/lib/api-notifications";
+import { useNotifications } from "@/hooks/useNotifications";
 
-const typeLabels: Record<string, string> = {
-  warranty_expiry: "保修到期",
-  subscription_renewal: "订阅续费",
-  digital_expiry: "到期提醒",
-  trial_expiry: "试用到期",
-  usage_stagnation: "使用停滞",
-  deprecation: "严重折旧",
-};
+function PushToggle() {
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg) {
+          reg.pushManager.getSubscription().then((sub) => {
+            setPushEnabled(!!sub);
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    }
+  }, []);
+
+  async function togglePush() {
+    setLoading(true);
+    try {
+      if (pushEnabled) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        const sub = await reg?.pushManager.getSubscription();
+        if (sub) {
+          await unsubscribePush(sub.endpoint);
+          await sub.unsubscribe();
+        }
+        setPushEnabled(false);
+      } else {
+        const publicKey = await getVapidPublicKey();
+        if (!publicKey) {
+          alert("Web Push 未配置，请检查服务器 VAPID 密钥");
+          return;
+        }
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: publicKey,
+        });
+        await subscribePush(sub);
+        setPushEnabled(true);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "推送设置失败");
+    }
+    setLoading(false);
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={togglePush}
+      disabled={loading}
+      title={pushEnabled ? "关闭推送通知" : "开启推送通知"}
+    >
+      {pushEnabled ? (
+        <Bell className="h-4 w-4" />
+      ) : (
+        <BellOff className="h-4 w-4" />
+      )}
+    </Button>
+  );
+}
 
 function Header() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState(searchParams.get("q") ?? "");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
-
-  const { data: notifications } = useNotifications(true);
-  const markRead = useMarkRead();
-  const dismiss = useDismiss();
-
-  const unreadCount = notifications?.filter((n) => !n.is_read && !n.is_dismissed).length ?? 0;
+  const { data: notifications } = useNotifications();
+  const unread = notifications?.filter((n: any) => !n.dismissed_at).length ?? 0;
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
+    const handler = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
       }
-    }
-    if (notifOpen) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [notifOpen]);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (searchText.trim()) {
       navigate(`/assets?q=${encodeURIComponent(searchText.trim())}`);
-    } else {
-      navigate("/assets");
     }
-    setSearchOpen(false);
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b px-4 md:px-6">
-      {searchOpen ? (
-        <form onSubmit={handleSearch} className="flex flex-1 items-center gap-2">
+    <header className="flex h-14 items-center justify-between border-b px-4 gap-2">
+      <div className="flex items-center gap-1">
+        <PushToggle />
+        <div ref={notifRef} className="relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setNotifOpen(!notifOpen)}
+          >
+            <Bell className="h-4 w-4" />
+            {unread > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                {unread}
+              </span>
+            )}
+          </Button>
+          {notifOpen && notifications && notifications.length > 0 && (
+            <div className="absolute right-0 top-full mt-1 w-72 rounded-md border bg-card shadow-lg z-50 max-h-64 overflow-y-auto">
+              {notifications.slice(0, 10).map((n: any) => (
+                <div
+                  key={n.id}
+                  className="border-b px-3 py-2 text-sm last:border-0"
+                >
+                  <p className="font-medium">{n.message}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {n.trigger_date}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 桌面搜索 */}
+      <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm">
+        <div className="relative w-full">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="搜索资产、供应商..."
-            className="flex-1"
-            autoFocus
+            placeholder="搜索资产..."
+            className="pl-9"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-          <button onClick={() => { setSearchOpen(false); setSearchText(searchParams.get("q") ?? ""); }} className="rounded-md p-2 text-muted-foreground hover:bg-accent">
+        </div>
+      </form>
+
+      {/* 移动搜索 */}
+      {mobileSearchOpen ? (
+        <form onSubmit={handleSearch} className="flex md:hidden flex-1 gap-1">
+          <Input
+            placeholder="搜索资产..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            autoFocus
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileSearchOpen(false)}
+          >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </form>
       ) : (
-        <>
-          <form onSubmit={handleSearch} className="relative hidden md:block w-72">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="搜索资产、供应商..."
-              className="pl-9"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          </form>
-          <button onClick={() => setSearchOpen(true)} className="rounded-md p-2 text-muted-foreground hover:bg-accent md:hidden">
-            <Search className="h-5 w-5" />
-          </button>
-        </>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setMobileSearchOpen(true)}
+        >
+          <Search className="h-4 w-4" />
+        </Button>
       )}
-
-      <div ref={notifRef} className="relative">
-        <button onClick={() => setNotifOpen(!notifOpen)} className="relative rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-medium">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </button>
-
-        {notifOpen && (
-          <div className="absolute right-0 top-12 w-80 max-h-64 overflow-y-auto rounded-lg border bg-card shadow-lg z-50">
-            <div className="p-3 border-b font-medium text-sm">通知</div>
-            {!notifications?.filter((n) => !n.is_dismissed).length ? (
-              <div className="p-4 text-sm text-muted-foreground text-center">暂无通知</div>
-            ) : (
-              notifications.filter((n) => !n.is_dismissed).map((n) => (
-                <div key={n.id} className={`p-3 border-b last:border-b-0 text-sm ${n.is_read ? "text-muted-foreground" : ""}`}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <Badge variant="outline" className="text-xs mb-1">{typeLabels[n.type]}</Badge>
-                      <p className="mt-0.5">{n.message}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{n.asset_name} · {n.trigger_date}</p>
-                    </div>
-                    <div className="flex gap-1">
-                      {!n.is_read && (
-                        <button onClick={() => markRead.mutate(n.id)} className="p-1 text-muted-foreground hover:text-primary" title="标记已读">
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                      <button onClick={() => dismiss.mutate(n.id)} className="p-1 text-muted-foreground hover:text-destructive" title="忽略">
-                        <EyeOff className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
     </header>
   );
 }

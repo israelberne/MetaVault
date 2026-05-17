@@ -71,3 +71,11 @@ CREATE TABLE IF NOT EXISTS screenshots (
 );
 
 CREATE INDEX IF NOT EXISTS idx_screenshots_asset ON screenshots(asset_id);
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id        TEXT PRIMARY KEY,
+  endpoint  TEXT NOT NULL UNIQUE,
+  p256dh    TEXT NOT NULL,
+  auth      TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

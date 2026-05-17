@@ -1,7 +1,22 @@
 import { Router, Request, Response } from "express";
+import multer from "multer";
+import path from "path";
 import { getDb } from "../db/init.js";
+import { recognizeSubscription } from "../services/ocr-service.js";
 
 const router = Router();
+
+const screenshotUpload = multer({
+  dest: "uploads/screenshots/",
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (/\.(jpg|jpeg|png|webp|bmp)$/i.test(path.extname(file.originalname))) {
+      cb(null, true);
+    } else {
+      cb(new Error("仅支持图片文件"));
+    }
+  },
+});
 
 // GET /api/assets — 列表（支持筛选）
 router.get("/", async (req: Request, res: Response) => {
@@ -122,6 +137,51 @@ router.delete("/:id", async (req: Request, res: Response) => {
     return;
   }
   res.json({ success: true });
+});
+
+// POST /api/assets/:id/screenshot — 上传订阅截图
+router.post("/:id/screenshot", screenshotUpload.single("screenshot"), async (req: Request, res: Response) => {
+  const db = await getDb();
+  const { id } = req.params;
+  const file = req.file;
+  if (!file) {
+    res.status(400).json({ error: "请上传截图文件" });
+    return;
+  }
+
+  const asset = db.prepare("SELECT ext FROM assets WHERE id = ?").get(id) as Record<string, string> | undefined;
+  if (!asset) {
+    res.status(404).json({ error: "资产不存在" });
+    return;
+  }
+
+  const ext = JSON.parse(asset.ext || "{}");
+  ext.screenshot_url = `/uploads/screenshots/${file.filename}`;
+
+  db.prepare("UPDATE assets SET ext = ? WHERE id = ?").run(JSON.stringify(ext), id);
+
+  // 同时保存到 screenshots 表
+  db.prepare(
+    "INSERT INTO screenshots (id, asset_id, file_path, original_name) VALUES (?, ?, ?, ?)"
+  ).run(crypto.randomUUID(), id, file.path, file.originalname);
+
+  res.json({ screenshot_url: ext.screenshot_url });
+});
+
+// POST /api/assets/ocr — OCR 识别订阅截图
+router.post("/ocr", screenshotUpload.single("screenshot"), async (req: Request, res: Response) => {
+  const file = req.file;
+  if (!file) {
+    res.status(400).json({ error: "请上传截图文件" });
+    return;
+  }
+
+  try {
+    const result = await recognizeSubscription(file.path);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: "OCR 识别失败: " + err.message });
+  }
 });
 
 export default router;
