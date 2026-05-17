@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const typeLabels: Record<string, string> = { physical: "物理", digital: "数字", subscription: "订阅", mixed: "混合" };
+const assetTypeLabels: Record<string, string> = { physical: "物理资产", digital: "数字资产", subscription: "订阅" };
+const statusLabels: Record<string, string> = { active: "使用中", idle: "闲置", expired: "过期", disposed: "已处置" };
 
 function SupplierDetail() {
   const navigate = useNavigate();
@@ -67,6 +69,23 @@ function SupplierDetail() {
           )}
         </CardContent>
       </Card>
+
+      {supplier.related_assets && supplier.related_assets.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>关联资产</CardTitle></CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            {supplier.related_assets.map((a) => (
+              <div key={a.id} className="flex items-center justify-between rounded-md border px-3 py-2 cursor-pointer hover:bg-accent" onClick={() => navigate(`/assets/${a.id}`)}>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{a.name}</span>
+                  <Badge variant="outline">{assetTypeLabels[a.type] ?? a.type}</Badge>
+                </div>
+                <Badge variant="secondary">{statusLabels[a.status] ?? a.status}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

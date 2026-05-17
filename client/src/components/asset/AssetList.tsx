@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
-import { useAssets } from "@/hooks/useAssets";
+import { Plus, Search, Trash2, CheckSquare, Square, X } from "lucide-react";
+import { useAssets, useDeleteAsset, useUpdateAsset } from "@/hooks/useAssets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -40,11 +40,54 @@ function AssetList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<AssetFilters>({});
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [batchStatus, setBatchStatus] = useState<AssetStatus | "">("");
   const search = searchParams.get("q") ?? "";
   const { data: assets, isLoading } = useAssets({
     ...filters,
     search: search || undefined,
   });
+  const deleteAsset = useDeleteAsset();
+  const updateAsset = useUpdateAsset();
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (!assets) return;
+    if (selected.size === assets.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(assets.map((a) => a.id)));
+    }
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelected(new Set());
+    setBatchStatus("");
+  }
+
+  function batchDelete() {
+    if (!confirm(`确定删除 ${selected.size} 个资产？`)) return;
+    selected.forEach((id) => deleteAsset.mutate(id));
+    exitSelectMode();
+  }
+
+  function batchUpdateStatus() {
+    if (!batchStatus) return;
+    selected.forEach((id) =>
+      updateAsset.mutate({ id, input: { status: batchStatus } as any })
+    );
+    exitSelectMode();
+  }
 
   return (
     <div className="space-y-4">
@@ -97,9 +140,47 @@ function AssetList() {
           </div>
         </div>
 
-        <Button onClick={() => navigate("/assets/new")} className="hidden md:inline-flex">
-          <Plus className="h-4 w-4 mr-1" /> 新建资产
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectMode ? (
+            <>
+              <span className="text-sm text-muted-foreground">已选 {selected.size} 项</span>
+              <Button variant="outline" size="sm" onClick={toggleAll}>
+                {assets && selected.size === assets.length ? "取消全选" : "全选"}
+              </Button>
+              <Select value={batchStatus} onValueChange={(v) => setBatchStatus(v as AssetStatus)}>
+                <SelectTrigger className="w-[100px] h-8">
+                  <SelectValue placeholder="改状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">使用中</SelectItem>
+                  <SelectItem value="idle">闲置</SelectItem>
+                  <SelectItem value="expired">过期</SelectItem>
+                  <SelectItem value="disposed">已处置</SelectItem>
+                </SelectContent>
+              </Select>
+              {batchStatus && (
+                <Button variant="outline" size="sm" onClick={batchUpdateStatus}>
+                  确认修改
+                </Button>
+              )}
+              <Button variant="destructive" size="sm" onClick={batchDelete} disabled={selected.size === 0}>
+                <Trash2 className="h-4 w-4 mr-1" /> 删除
+              </Button>
+              <Button variant="ghost" size="icon" onClick={exitSelectMode}>
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setSelectMode(true)}>
+                批量操作
+              </Button>
+              <Button onClick={() => navigate("/assets/new")} className="hidden md:inline-flex">
+                <Plus className="h-4 w-4 mr-1" /> 新建资产
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* 资产网格 */}
@@ -118,14 +199,31 @@ function AssetList() {
           {assets.map((asset) => (
             <Card
               key={asset.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
-              onClick={() => navigate(`/assets/${asset.id}`)}
+              className={`cursor-pointer transition-shadow hover:shadow-md ${selected.has(asset.id) ? "ring-2 ring-primary" : ""}`}
+              onClick={() => {
+                if (selectMode) {
+                  toggleSelect(asset.id);
+                } else {
+                  navigate(`/assets/${asset.id}`);
+                }
+              }}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="font-medium truncate">{asset.name}</h3>
-                    <p className="text-sm text-muted-foreground">{asset.category}</p>
+                  <div className="flex items-start gap-2 min-w-0">
+                    {selectMode && (
+                      <span className="mt-0.5">
+                        {selected.has(asset.id) ? (
+                          <CheckSquare className="h-4 w-4 text-primary" />
+                        ) : (
+                          <Square className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="font-medium truncate">{asset.name}</h3>
+                      <p className="text-sm text-muted-foreground">{asset.category}</p>
+                    </div>
                   </div>
                   <Badge className={statusColors[asset.status]} variant="secondary">
                     {statusLabels[asset.status]}
@@ -149,12 +247,14 @@ function AssetList() {
       )}
 
       {/* 手机端 FAB */}
-      <button
-        onClick={() => navigate("/assets/new")}
-        className="fixed bottom-20 right-4 md:hidden h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
+      {!selectMode && (
+        <button
+          onClick={() => navigate("/assets/new")}
+          className="fixed bottom-20 right-4 md:hidden h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
     </div>
   );
 }

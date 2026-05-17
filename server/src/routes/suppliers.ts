@@ -13,7 +13,7 @@ router.get("/", async (_req: Request, res: Response) => {
   })));
 });
 
-// GET /api/suppliers/:id — 详情
+// GET /api/suppliers/:id — 详情（含关联资产）
 router.get("/:id", async (req: Request, res: Response) => {
   const db = await getDb();
   const row = db.prepare("SELECT * FROM suppliers WHERE id = ?").get(req.params.id) as Record<string, unknown> | undefined;
@@ -21,7 +21,12 @@ router.get("/:id", async (req: Request, res: Response) => {
     res.status(404).json({ error: "Supplier not found" });
     return;
   }
-  res.json({ ...row, tags: JSON.parse(row.tags as string || "[]") });
+
+  const assets = db.prepare(
+    "SELECT id, name, type, category, status FROM assets WHERE supplier_id = ? ORDER BY updated_at DESC"
+  ).all(req.params.id) as Record<string, unknown>[];
+
+  res.json({ ...row, tags: JSON.parse(row.tags as string || "[]"), related_assets: assets });
 });
 
 // POST /api/suppliers — 创建

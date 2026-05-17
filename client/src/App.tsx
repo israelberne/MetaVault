@@ -9,6 +9,7 @@ import SupplierDetail from "@/components/supplier/SupplierDetail";
 import SupplierForm from "@/components/supplier/SupplierForm";
 import ImportWizard from "@/components/import/ImportWizard";
 import ExportPage from "@/components/export/ExportPage";
+import NotificationPage from "@/components/notification/NotificationPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/suppliers/:id/edit" element={<SupplierForm />} />
         <Route path="/import" element={<ImportWizard />} />
         <Route path="/export" element={<ExportPage />} />
+        <Route path="/notifications" element={<NotificationPage />} />
       </Route>
     </Routes>
   );

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Bell, Search, X, BellOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -131,6 +131,13 @@ function Header() {
                   </p>
                 </div>
               ))}
+              <Link
+                to="/notifications"
+                className="block px-3 py-2 text-sm text-center text-muted-foreground hover:text-primary border-t"
+                onClick={() => setNotifOpen(false)}
+              >
+                查看全部通知
+              </Link>
             </div>
           )}
         </div>

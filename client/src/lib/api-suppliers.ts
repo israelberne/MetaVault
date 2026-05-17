@@ -12,6 +12,7 @@ export interface Supplier {
   is_favorite: boolean;
   created_at: string;
   updated_at: string;
+  related_assets?: Array<{ id: string; name: string; type: string; category: string; status: string }>;
 }
 
 export interface SupplierInput {
