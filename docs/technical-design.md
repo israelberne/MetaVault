@@ -1,4 +1,4 @@
-# MetaVault 技术设计 v0.4
+# MetaVault 技术设计 v0.5
 
 ## 1. 数据库设计
 
@@ -148,19 +148,30 @@ CREATE INDEX idx_notifications_trigger ON notifications(trigger_date);
 CREATE INDEX idx_notifications_unread ON notifications(is_read, is_dismissed);
 ```
 
-#### screenshots（截图表）— 未实现，预留设计
+#### screenshots（截图表）— 已实现
 
 ```sql
-CREATE TABLE screenshots (
+CREATE TABLE IF NOT EXISTS screenshots (
   id          TEXT PRIMARY KEY,
   asset_id    TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-  file_path   TEXT NOT NULL,               -- 本地存储路径
-  ocr_text    TEXT,                        -- OCR识别结果
-  ocr_parsed  TEXT DEFAULT '{}',           -- OCR结构化提取结果（JSON）
+  file_path   TEXT NOT NULL,
+  original_name TEXT,
   created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_screenshots_asset ON screenshots(asset_id);
+CREATE INDEX IF NOT EXISTS idx_screenshots_asset ON screenshots(asset_id);
+```
+
+#### push_subscriptions（推送订阅表）— 已实现
+
+```sql
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id        TEXT PRIMARY KEY,
+  endpoint  TEXT NOT NULL UNIQUE,
+  p256dh    TEXT NOT NULL,
+  auth      TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 ```
 
 ---
@@ -205,11 +216,13 @@ client/src/
 │   │   ├── SupplierDetail.tsx  # 供应商详情
 │   │   └── SupplierForm.tsx    # 供应商表单
 │   ├── dashboard/
-│   │   └── Dashboard.tsx       # 仪表盘（统计卡片+分布+订阅+健康）
+│   │   └── Dashboard.tsx       # 仪表盘（统计卡片+图表+订阅+健康）
 │   ├── import/
 │   │   └── ImportWizard.tsx    # 导入向导（上传→预览→映射→导入）
 │   ├── export/
 │   │   └── ExportPage.tsx      # 数据导出（资产/供应商Excel导出）
+│   ├── notification/
+│   │   └── NotificationPage.tsx # 通知页面（未读/全部+批量操作）
 ├── types/
 │   └── asset.ts                # 资产类型定义
 └── index.css                   # Tailwind + shadcn/ui 主题
@@ -229,6 +242,7 @@ client/src/
 /suppliers/:id/edit   → SupplierForm（编辑）
 /import               → ImportPage           数据导入
 /export               → ExportPage           数据导出
+/notifications        → NotificationPage     通知页面
 ```
 
 ### 2.3 页面布局
@@ -295,6 +309,9 @@ client/src/
 | `/api/notifications/:id/read` | PATCH | 标记已读 |
 | `/api/notifications/:id/dismiss` | PATCH | 忽略 |
 | `/api/notifications/scan` | POST | 触发扫描 |
+| `/api/notifications/vapid-public-key` | GET | 获取 VAPID 公钥 |
+| `/api/notifications/subscribe` | POST | 保存推送订阅 |
+| `/api/notifications/subscribe` | DELETE | 删除推送订阅 |
 | `/api/import/parse` | POST | 上传+解析预览 |
 | `/api/import/execute` | POST | 确认导入 |
 | `/api/export/assets` | GET | 导出资产Excel |
@@ -302,6 +319,9 @@ client/src/
 | `/api/dashboard/overview` | GET | 总览统计 |
 | `/api/dashboard/subscriptions` | GET | 订阅费用 |
 | `/api/dashboard/health` | GET | 健康度 |
+| `/api/dashboard/trends` | GET | 订阅月费用趋势 |
+| `/api/assets/:id/screenshot` | POST | 上传订阅截图 |
+| `/api/assets/ocr` | POST | OCR 识别订阅截图 |
 
 **安全：** 全部使用参数化查询防 SQL 注入。
 

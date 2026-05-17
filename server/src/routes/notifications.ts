@@ -43,6 +43,43 @@ router.patch("/:id/dismiss", async (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+// GET /api/notifications/vapid-public-key — 获取 VAPID 公钥
+router.get("/vapid-public-key", (_req: Request, res: Response) => {
+  const publicKey = getVapidPublicKey();
+  if (!publicKey) {
+    res.status(404).json({ error: "VAPID not configured" });
+    return;
+  }
+  res.json({ publicKey });
+});
+
+// POST /api/notifications/subscribe — 保存推送订阅
+router.post("/subscribe", async (req: Request, res: Response) => {
+  const db = await getDb();
+  const { endpoint, keys } = req.body;
+  if (!endpoint || !keys?.p256dh || !keys?.auth) {
+    res.status(400).json({ error: "缺少订阅参数" });
+    return;
+  }
+  db.prepare(
+    `INSERT OR REPLACE INTO push_subscriptions (id, endpoint, p256dh, auth, created_at)
+     VALUES (?, ?, ?, ?, datetime('now'))`
+  ).run(crypto.randomUUID(), endpoint, keys.p256dh, keys.auth);
+  res.json({ success: true });
+});
+
+// DELETE /api/notifications/subscribe — 删除推送订阅
+router.delete("/subscribe", async (req: Request, res: Response) => {
+  const db = await getDb();
+  const { endpoint } = req.body;
+  if (!endpoint) {
+    res.status(400).json({ error: "缺少 endpoint" });
+    return;
+  }
+  db.prepare("DELETE FROM push_subscriptions WHERE endpoint = ?").run(endpoint);
+  res.json({ success: true });
+});
+
 // POST /api/notifications/scan — 触发扫描
 router.post("/scan", async (_req: Request, res: Response) => {
   const { scanNotifications } = await import("../services/notification-scanner.js");

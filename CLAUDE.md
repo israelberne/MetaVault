@@ -15,7 +15,7 @@
 ```
 /client       - React前端（Vite + Tailwind + shadcn/ui）
   src/
-    components/   UI 组件（asset / supplier / dashboard / import / export / layout）
+    components/   UI 组件（asset / supplier / dashboard / import / export / notification / layout）
     hooks/        React Query hooks
     lib/          API 封装（api-client + api-*）
     types/        TypeScript 类型
@@ -23,7 +23,7 @@
   src/
     db/           数据库初始化（init.sql + init.ts）
     routes/       REST API 路由（assets / suppliers / relations / notifications / import / dashboard / export）
-    services/     提醒扫描服务
+    services/     提醒扫描 + OCR识别 + Web Push服务
     middleware/    错误处理
 /docs         - 产品文档（PRD / 技术设计）
 ```
@@ -36,13 +36,17 @@
 
 ## 功能清单
 - 资产 CRUD（物理/数字/订阅三类，扩展字段 JSON 存储）
-- 优秀供应商管理（CRUD + 收藏）
+- 资产批量操作（批量修改状态、批量删除）
+- 优秀供应商管理（CRUD + 收藏 + 关联资产展示）
 - 资产关联（depends_on / contains / bound_to / related_to）
 - 提醒系统（6 种类型，启动时 + 每小时自动扫描）
-- 统计仪表盘（总览 / 订阅费用 / 健康度）
+- Web Push 通知（VAPID，浏览器推送）
+- 统计仪表盘（总览 / 订阅费用 / 健康度 + 图表可视化）
 - 数据导入（CSV / Excel，字段映射 + 预览）
 - 数据导出（Excel 格式导出资产和供应商数据）
 - 全局搜索（Header 搜索栏驱动资产列表筛选）
+- 通知页面（未读/全部筛选，批量已读/忽略）
+- 订阅截图上传 + OCR 识别（tesseract.js）
 - 移动端适配（<768px 底部 Tab，>=768px 侧边栏）
 
 ## 移动端适配
