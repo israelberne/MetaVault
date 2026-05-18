@@ -135,7 +135,7 @@ CREATE INDEX idx_relations_target ON asset_relations(target_id);
 CREATE TABLE notifications (
   id          TEXT PRIMARY KEY,
   asset_id    TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-  type        TEXT NOT NULL CHECK(type IN ('warranty_expiry','subscription_renewal','digital_expiry','trial_expiry','usage_stagnation','deprecation')),
+  type        TEXT NOT NULL CHECK(type IN ('warranty_expiry','subscription_renewal','digital_expiry','trial_expiry','usage_stagnation','deprecation','cancellation_suggestion','replacement_suggestion')),
   message     TEXT NOT NULL,
   trigger_date TEXT NOT NULL,              -- 提醒触发日期
   is_read     INTEGER DEFAULT 0,
@@ -299,7 +299,7 @@ client/src/
 |------|------|------|
 | `/api/assets` | GET/POST | 列表（带筛选）/创建 |
 | `/api/assets/:id` | GET/PUT/DELETE | 详情/更新/删除 |
-| `/api/suppliers` | GET/POST | 列表/创建 |
+| `/api/suppliers` | GET | 列表（支持 type/favorite 过滤） |
 | `/api/suppliers/:id` | GET/PUT/DELETE | 详情/更新/删除 |
 | `/api/suppliers/:id/favorite` | PATCH | 切换收藏 |
 | `/api/relations/:assetId` | GET | 获取关联 |
@@ -320,6 +320,7 @@ client/src/
 | `/api/dashboard/subscriptions` | GET | 订阅费用 |
 | `/api/dashboard/health` | GET | 健康度 |
 | `/api/dashboard/trends` | GET | 订阅月费用趋势 |
+| `/api/assets/:id/usage` | PATCH | 标记数字资产已使用 |
 | `/api/assets/:id/screenshot` | POST | 上传订阅截图 |
 | `/api/assets/ocr` | POST | OCR 识别订阅截图 |
 
@@ -352,6 +353,8 @@ client/src/
 | trial_expiry | subscription.ext → trial_end - 3天 <= 今天 |
 | usage_stagnation | digital.ext → usage_stats.last_access + 30天 <= 今天 |
 | deprecation | physical.ext → current_value <= purchase_price * 0.1 |
+| cancellation_suggestion | subscription.ext → usage_frequency="rarely" + next_billing_date - 7天 <= 今天 |
+| replacement_suggestion | physical.ext → current_value <= purchase_price * 0.1 + 有收藏的 physical/mixed 供应商 |
 
 ### 4.2 去重
 

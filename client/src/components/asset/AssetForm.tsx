@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AssetType, AssetStatus, AssetInput } from "@/types/asset";
+import { categoryLabels } from "@/types/asset";
 
 const assetTypes: { value: AssetType; label: string }[] = [
   { value: "physical", label: "物理资产" },
@@ -169,7 +170,7 @@ function AssetForm() {
           <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {categories[form.type].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {categories[form.type].map((c) => <SelectItem key={c} value={c}>{categoryLabels[c] ?? c}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

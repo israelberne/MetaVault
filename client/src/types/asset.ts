@@ -71,3 +71,25 @@ export interface AssetFilters {
   category?: string;
   search?: string;
 }
+
+export const categoryLabels: Record<string, string> = {
+  "physical.laptop": "笔记本电脑",
+  "physical.phone": "手机",
+  "physical.monitor": "显示器",
+  "physical.furniture": "家具",
+  "physical.camera": "相机",
+  "physical.book": "书籍",
+  "physical.other": "其他物理资产",
+  "digital.domain": "域名",
+  "digital.course": "在线课程",
+  "digital.ebook": "电子书",
+  "digital.software_license": "软件许可",
+  "digital.account": "数字账号",
+  "digital.other": "其他数字资产",
+  "subscription.saas": "SaaS 服务",
+  "subscription.membership": "会员",
+  "subscription.cloud_service": "云服务",
+  "subscription.streaming": "流媒体",
+  "subscription.insurance": "保险",
+  "subscription.other": "其他订阅",
+};

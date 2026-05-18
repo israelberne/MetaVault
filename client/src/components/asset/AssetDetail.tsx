@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AssetType, AssetStatus } from "@/types/asset";
+import { categoryLabels } from "@/types/asset";
 
 const typeLabels: Record<AssetType, string> = { physical: "物理资产", digital: "数字资产", subscription: "订阅" };
 const statusLabels: Record<AssetStatus, string> = { active: "使用中", idle: "闲置", expired: "过期", disposed: "已处置" };
@@ -91,7 +92,7 @@ function AssetDetail() {
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
               <Badge variant="outline">{typeLabels[asset.type]}</Badge>
               <Badge>{statusLabels[asset.status]}</Badge>
-              <span>{asset.category}</span>
+              <span>{categoryLabels[asset.category] ?? asset.category}</span>
             </div>
           </div>
         </div>

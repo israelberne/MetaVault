@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AssetType, AssetStatus, AssetFilters } from "@/types/asset";
+import { categoryLabels } from "@/types/asset";
 
 const typeLabels: Record<AssetType, string> = {
   physical: "物理资产",
@@ -242,7 +243,7 @@ function AssetList() {
                     )}
                     <div className="min-w-0">
                       <h3 className="font-medium truncate">{asset.name}</h3>
-                      <p className="text-sm text-muted-foreground">{asset.category}</p>
+                      <p className="text-sm text-muted-foreground">{categoryLabels[asset.category] ?? asset.category}</p>
                     </div>
                   </div>
                   <Badge className={statusColors[asset.status]} variant="secondary">
