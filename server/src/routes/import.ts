@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express";
+import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
 import multer from "multer";
 import * as xlsx from "xlsx";
 
 const upload = multer({ dest: "uploads/" });
 
-const router = Router();
+const router: RouterType = Router();
 
 // POST /api/import/parse — 上传+解析预览
 router.post("/parse", upload.single("file"), (req: Request, res: Response) => {

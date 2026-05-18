@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
 import { getVapidPublicKey } from "../services/push-service.js";
 
-const router = Router();
+const router: RouterType = Router();
 
 // GET /api/notifications — 列表
 router.get("/", async (req: Request, res: Response) => {

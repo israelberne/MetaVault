@@ -1,10 +1,11 @@
 import { Router, Request, Response } from "express";
+import type { Router as RouterType } from "express";
 import multer from "multer";
 import path from "path";
 import { getDb } from "../db/init.js";
 import { recognizeSubscription } from "../services/ocr-service.js";
 
-const router = Router();
+const router: RouterType = Router();
 
 const screenshotUpload = multer({
   dest: "uploads/screenshots/",
@@ -45,9 +46,8 @@ router.get("/", async (req: Request, res: Response) => {
 
   sql += " ORDER BY updated_at DESC";
 
-  const rows = db.prepare(sql).all(...params);
-  // 解析 JSON 字段
-  const assets = rows.map((row: Record<string, unknown>) => ({
+  const rows = db.prepare(sql).all(...params) as Record<string, unknown>[];
+  const assets = rows.map((row) => ({
     ...row,
     tags: JSON.parse(row.tags as string || "[]"),
     ext: JSON.parse(row.ext as string || "{}"),

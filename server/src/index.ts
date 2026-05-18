@@ -1,3 +1,10 @@
+// Force UTF-8 on Windows (code page 936 defaults to GBK)
+if (process.platform === 'win32') {
+  process.stdout.setEncoding('utf8');
+  process.stderr.setEncoding('utf8');
+  if (!process.env.LANG) process.env.LANG = 'en_US.UTF-8';
+}
+
 import "dotenv/config";
 import express from "express";
 import cors from "cors";

@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
+import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
 
-const router = Router();
+const router: RouterType = Router();
 
 // GET /api/dashboard/overview — 总览统计
 router.get("/overview", async (_req: Request, res: Response) => {
@@ -23,11 +24,11 @@ router.get("/subscriptions", async (_req: Request, res: Response) => {
 
   const subscriptions = db.prepare(
     `SELECT id, name, ext FROM assets WHERE type = 'subscription' AND status = 'active'`
-  ).all();
+  ).all() as Record<string, unknown>[];
 
   let monthlyTotal = 0;
   let yearlyTotal = 0;
-  const items = subscriptions.map((row: Record<string, unknown>) => {
+  const items = subscriptions.map((row) => {
     const ext = JSON.parse(row.ext as string || "{}") as Record<string, unknown>;
     const amount = Number(ext.amount ?? 0);
     const cycle = String(ext.billing_cycle ?? "monthly");
@@ -53,7 +54,8 @@ router.get("/health", async (_req: Request, res: Response) => {
   const unreadNotifications = (db.prepare("SELECT COUNT(*) as count FROM notifications WHERE is_read = 0 AND is_dismissed = 0").get() as Record<string, number>).count;
   const expiringAssets = db.prepare(
     `SELECT id, name, type, ext FROM assets WHERE status = 'active'`
-  ).all().filter((row: Record<string, unknown>) => {
+  ).all() as Record<string, unknown>[];
+  const filtered = expiringAssets.filter((row) => {
     const ext = JSON.parse(row.ext as string || "{}") as Record<string, unknown>;
     const now = new Date();
     const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -70,7 +72,7 @@ router.get("/health", async (_req: Request, res: Response) => {
     return false;
   });
 
-  res.json({ unreadNotifications, expiringAssets: expiringAssets.length, expiringDetails: expiringAssets });
+  res.json({ unreadNotifications, expiringAssets: filtered.length, expiringDetails: filtered });
 });
 
 // GET /api/dashboard/trends — 近12个月订阅费用趋势

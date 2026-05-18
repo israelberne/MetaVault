@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
+import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
 import * as xlsx from "xlsx";
 
-const router = Router();
+const router: RouterType = Router();
 
 // GET /api/export/assets — 导出资产为 Excel
 router.get("/assets", async (_req: Request, res: Response) => {

@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
+import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
 
-const router = Router();
+const router: RouterType = Router();
 
 // GET /api/suppliers — 列表（支持 type/favorite 过滤）
 router.get("/", async (req: Request, res: Response) => {
@@ -21,8 +22,8 @@ router.get("/", async (req: Request, res: Response) => {
 
   sql += " ORDER BY is_favorite DESC, updated_at DESC";
 
-  const rows = db.prepare(sql).all(...params);
-  res.json(rows.map((row: Record<string, unknown>) => ({
+  const rows = db.prepare(sql).all(...params) as Record<string, unknown>[];
+  res.json(rows.map((row) => ({
     ...row,
     tags: JSON.parse(row.tags as string || "[]"),
   })));
