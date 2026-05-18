@@ -31,6 +31,7 @@ export interface SubscriptionExt {
   amount?: number;
   trial_end?: string;
   screenshot_url?: string;
+  usage_frequency?: "daily" | "weekly" | "monthly" | "rarely";
 }
 
 export interface Asset {

@@ -1,7 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Pencil, Trash2, ArrowLeft, Star } from "lucide-react";
 import { useAsset, useDeleteAsset, useMarkAssetUsed } from "@/hooks/useAssets";
 import { useRelations } from "@/hooks/useRelations";
+import { useSupplier } from "@/hooks/useSuppliers";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSuppliers } from "@/lib/api-suppliers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +17,37 @@ const statusLabels: Record<AssetStatus, string> = { active: "使用中", idle: "
 const relationLabels: Record<string, string> = { depends_on: "依赖", contains: "包含", bound_to: "绑定", related_to: "相关" };
 
 const sourceLabels: Record<string, string> = { purchase: "购入", self_build: "自建", donation: "捐赠", transfer: "调拨" };
+const usageFreqLabels: Record<string, string> = { daily: "每天", weekly: "每周", monthly: "每月", rarely: "很少" };
+
+function ReplacementSuppliers({ navigate }: { navigate: (path: string) => void }) {
+  const { data: suppliers } = useQuery({
+    queryKey: ["suppliers", { type: "physical", favorite: true }],
+    queryFn: () => fetchSuppliers({ type: "physical", favorite: true }),
+  });
+
+  if (!suppliers?.length) return null;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>推荐替换供应商</CardTitle></CardHeader>
+      <CardContent className="space-y-2 text-sm">
+        {suppliers.map((s) => (
+          <div
+            key={s.id}
+            className="flex items-center justify-between rounded-md border px-3 py-2 cursor-pointer hover:bg-accent"
+            onClick={() => navigate(`/suppliers/${s.id}`)}
+          >
+            <div className="flex items-center gap-2">
+              <Star className={`h-4 w-4 ${s.is_favorite ? "fill-primary text-primary" : ""}`} />
+              <span className="font-medium">{s.name}</span>
+            </div>
+            <Badge variant="outline">{s.type === "mixed" ? "混合" : "物理"}</Badge>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 function AssetDetail() {
   const navigate = useNavigate();
@@ -22,6 +56,7 @@ function AssetDetail() {
   const { data: relations } = useRelations(id!);
   const deleteAsset = useDeleteAsset();
   const markUsed = useMarkAssetUsed();
+  const { data: supplier } = useSupplier(asset?.supplier_id ?? "");
 
   if (isLoading) return <Skeleton className="h-64 rounded-lg" />;
   if (!asset) return <div className="text-muted-foreground">资产不存在</div>;
@@ -79,6 +114,14 @@ function AssetDetail() {
           {asset.purchase_date && <div><span className="text-muted-foreground">获取日期：</span>{asset.purchase_date}</div>}
           {asset.purchase_price != null && <div><span className="text-muted-foreground">获取价格：</span>¥{asset.purchase_price.toLocaleString()}</div>}
           <div><span className="text-muted-foreground">币种：</span>{asset.currency}</div>
+          {asset.supplier_id && supplier && (
+            <div><span className="text-muted-foreground">供应商：</span>
+              <span className="cursor-pointer hover:underline text-primary" onClick={() => navigate(`/suppliers/${asset.supplier_id}`)}>
+                {supplier.is_favorite && <Star className="h-3 w-3 fill-primary text-primary inline mr-0.5" />}
+                {supplier.name}
+              </span>
+            </div>
+          )}
           {asset.notes && <div className="md:col-span-2"><span className="text-muted-foreground">备注：</span>{asset.notes}</div>}
           {asset.tags?.length > 0 && (
             <div className="md:col-span-2">
@@ -128,6 +171,7 @@ function AssetDetail() {
               {ext.amount != null && <div><span className="text-muted-foreground">每期费用：</span>¥{Number(ext.amount).toLocaleString()}</div>}
               {ext.next_billing_date && <div><span className="text-muted-foreground">下次扣费：</span>{ext.next_billing_date as string}</div>}
               {ext.trial_end && <div><span className="text-muted-foreground">试用到期：</span>{ext.trial_end as string}</div>}
+              {ext.usage_frequency && <div><span className="text-muted-foreground">使用频率：</span>{usageFreqLabels[ext.usage_frequency as string] ?? ext.usage_frequency as string}</div>}
               {ext.screenshot_url && (
                 <div className="md:col-span-2">
                   <span className="text-muted-foreground">订阅截图：</span>
@@ -139,6 +183,11 @@ function AssetDetail() {
           {!Object.keys(ext).length && <div className="text-muted-foreground">无扩展信息</div>}
         </CardContent>
       </Card>
+
+      {/* 推荐替换供应商（折旧物理资产） */}
+      {asset.type === "physical" && ext.current_value != null && asset.purchase_price != null && Number(ext.current_value) <= Number(asset.purchase_price) * 0.1 && (
+        <ReplacementSuppliers navigate={navigate} />
+      )}
 
       {/* 关联资产 */}
       {relations?.length > 0 && (

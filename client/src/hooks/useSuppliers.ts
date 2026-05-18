@@ -7,12 +7,19 @@ import {
   toggleSupplierFavorite,
   deleteSupplier,
 } from "@/lib/api-suppliers";
-import type { SupplierInput } from "@/lib/api-suppliers";
+import type { SupplierInput, SupplierFilters } from "@/lib/api-suppliers";
 
 export function useSuppliers() {
   return useQuery({
     queryKey: ["suppliers"],
-    queryFn: fetchSuppliers,
+    queryFn: () => fetchSuppliers(),
+  });
+}
+
+export function useFilteredSuppliers(filters: SupplierFilters) {
+  return useQuery({
+    queryKey: ["suppliers", filters],
+    queryFn: () => fetchSuppliers(filters),
   });
 }
 

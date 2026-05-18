@@ -8,6 +8,11 @@ export async function scanNotifications(): Promise<number> {
 
   const assets = db.prepare("SELECT id, name, type, ext, purchase_price FROM assets WHERE status = 'active'").all() as Record<string, unknown>[];
 
+  // 查询收藏的物理/混合供应商（用于替换建议）
+  const favPhysicalSuppliers = db.prepare(
+    "SELECT name FROM suppliers WHERE is_favorite = 1 AND (type = 'physical' OR type = 'mixed') LIMIT 3"
+  ).all() as { name: string }[];
+
   let count = 0;
   const insert = db.prepare(
     `INSERT OR IGNORE INTO notifications (id, asset_id, type, message, trigger_date, created_at)
@@ -30,6 +35,10 @@ export async function scanNotifications(): Promise<number> {
         if (ext.current_value && asset.purchase_price) {
           if (Number(ext.current_value) <= Number(asset.purchase_price) * 0.1) {
             checks.push({ type: "deprecation", message: `${asset.name} 严重折旧`, triggerDate: today });
+            if (favPhysicalSuppliers.length > 0) {
+              const names = favPhysicalSuppliers.map(s => s.name).join("、");
+              checks.push({ type: "replacement_suggestion", message: `${asset.name} 已严重折旧，推荐供应商：${names}`, triggerDate: today });
+            }
           }
         }
       }
@@ -47,6 +56,14 @@ export async function scanNotifications(): Promise<number> {
           const warn = new Date(exp.getTime() - 3 * 24 * 60 * 60 * 1000);
           if (warn <= now) {
             checks.push({ type: "trial_expiry", message: `${asset.name} 试用即将到期`, triggerDate: ext.trial_end as string });
+          }
+        }
+        // 低使用率订阅取消建议
+        if (ext.usage_frequency === "rarely" && ext.next_billing_date) {
+          const exp = new Date(ext.next_billing_date as string);
+          const warn = new Date(exp.getTime() - 7 * 24 * 60 * 60 * 1000);
+          if (warn <= now) {
+            checks.push({ type: "cancellation_suggestion", message: `${asset.name} 使用频率低，建议考虑取消续费`, triggerDate: ext.next_billing_date as string });
           }
         }
       }

@@ -4,7 +4,7 @@ export interface Notification {
   id: string;
   asset_id: string;
   asset_name: string;
-  type: "warranty_expiry" | "subscription_renewal" | "digital_expiry" | "trial_expiry" | "usage_stagnation" | "deprecation";
+  type: "warranty_expiry" | "subscription_renewal" | "digital_expiry" | "trial_expiry" | "usage_stagnation" | "deprecation" | "cancellation_suggestion" | "replacement_suggestion";
   message: string;
   trigger_date: string;
   is_read: boolean;

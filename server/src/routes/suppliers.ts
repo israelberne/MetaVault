@@ -3,10 +3,25 @@ import { getDb } from "../db/init.js";
 
 const router = Router();
 
-// GET /api/suppliers — 列表
-router.get("/", async (_req: Request, res: Response) => {
+// GET /api/suppliers — 列表（支持 type/favorite 过滤）
+router.get("/", async (req: Request, res: Response) => {
   const db = await getDb();
-  const rows = db.prepare("SELECT * FROM suppliers ORDER BY updated_at DESC").all();
+  const { type, favorite } = req.query;
+
+  let sql = "SELECT * FROM suppliers WHERE 1=1";
+  const params: unknown[] = [];
+
+  if (type) {
+    sql += " AND (type = ? OR type = 'mixed')";
+    params.push(type);
+  }
+  if (favorite === "true") {
+    sql += " AND is_favorite = 1";
+  }
+
+  sql += " ORDER BY is_favorite DESC, updated_at DESC";
+
+  const rows = db.prepare(sql).all(...params);
   res.json(rows.map((row: Record<string, unknown>) => ({
     ...row,
     tags: JSON.parse(row.tags as string || "[]"),

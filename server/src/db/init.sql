@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_relations_target ON asset_relations(target_id);
 CREATE TABLE IF NOT EXISTS notifications (
   id          TEXT PRIMARY KEY,
   asset_id    TEXT NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-  type        TEXT NOT NULL CHECK(type IN ('warranty_expiry','subscription_renewal','digital_expiry','trial_expiry','usage_stagnation','deprecation')),
+  type        TEXT NOT NULL CHECK(type IN ('warranty_expiry','subscription_renewal','digital_expiry','trial_expiry','usage_stagnation','deprecation','cancellation_suggestion','replacement_suggestion')),
   message     TEXT NOT NULL,
   trigger_date TEXT NOT NULL,
   is_read     INTEGER DEFAULT 0,

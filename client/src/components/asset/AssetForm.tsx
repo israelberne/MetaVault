@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Upload, Camera } from "lucide-react";
+import { Upload, Camera, Star } from "lucide-react";
 import { useAsset, useCreateAsset, useUpdateAsset } from "@/hooks/useAssets";
+import { useFilteredSuppliers } from "@/hooks/useSuppliers";
 import { ocrRecognize } from "@/lib/api-assets";
 import type { OcrResult } from "@/lib/api-assets";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,7 @@ function AssetForm() {
     purchase_date: null,
     purchase_price: null,
     currency: "CNY",
+    supplier_id: null,
     notes: null,
     ext: {},
   });
@@ -110,12 +112,17 @@ function AssetForm() {
       purchase_date: existing.purchase_date,
       purchase_price: existing.purchase_price,
       currency: existing.currency,
+      supplier_id: existing.supplier_id,
       notes: existing.notes,
       ext: existing.ext,
     });
   }
 
   const [tagInput, setTagInput] = useState("");
+
+  const { data: filteredSuppliers } = useFilteredSuppliers(
+    form.type ? { type: form.type } : {}
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -185,6 +192,24 @@ function AssetForm() {
         <div className="space-y-2">
           <Label>获取价格</Label>
           <Input type="number" value={form.purchase_price ?? ""} onChange={(e) => setForm((f) => ({ ...f, purchase_price: e.target.value ? Number(e.target.value) : null }))} />
+        </div>
+
+        <div className="space-y-2">
+          <Label>供应商</Label>
+          <Select
+            value={form.supplier_id ?? "none"}
+            onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === "none" ? null : v }))}
+          >
+            <SelectTrigger className="w-full"><SelectValue placeholder="选择供应商" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">不选择</SelectItem>
+              {filteredSuppliers?.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.is_favorite ? "★ " : ""}{s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -313,6 +338,18 @@ function AssetForm() {
           <div className="space-y-2">
             <Label>试用到期日</Label>
             <Input type="date" value={(form.ext as Record<string, unknown>).trial_end as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, trial_end: e.target.value } }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>使用频率</Label>
+            <Select value={(form.ext as Record<string, unknown>).usage_frequency as string ?? "monthly"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...f.ext, usage_frequency: v } }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">每天</SelectItem>
+                <SelectItem value="weekly">每周</SelectItem>
+                <SelectItem value="monthly">每月</SelectItem>
+                <SelectItem value="rarely">很少</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>订阅截图（OCR 自动识别）</Label>

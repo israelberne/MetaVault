@@ -12,6 +12,8 @@ const typeLabels: Record<string, string> = {
   trial_expiry: "试用到期",
   usage_stagnation: "使用停滞",
   deprecation: "严重折旧",
+  cancellation_suggestion: "取消建议",
+  replacement_suggestion: "替换建议",
 };
 
 function NotificationPage() {

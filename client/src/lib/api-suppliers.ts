@@ -26,8 +26,17 @@ export interface SupplierInput {
   is_favorite?: boolean;
 }
 
-export function fetchSuppliers(): Promise<Supplier[]> {
-  return apiFetch<Supplier[]>("/suppliers");
+export interface SupplierFilters {
+  type?: string;
+  favorite?: boolean;
+}
+
+export function fetchSuppliers(filters?: SupplierFilters): Promise<Supplier[]> {
+  const params = new URLSearchParams();
+  if (filters?.type) params.set("type", filters.type);
+  if (filters?.favorite) params.set("favorite", "true");
+  const qs = params.toString();
+  return apiFetch<Supplier[]>(`/suppliers${qs ? `?${qs}` : ""}`);
 }
 
 export function fetchSupplier(id: string): Promise<Supplier> {
