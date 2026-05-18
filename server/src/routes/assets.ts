@@ -139,6 +139,44 @@ router.delete("/:id", async (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+// PATCH /api/assets/:id/usage — 标记数字资产已使用
+router.patch("/:id/usage", async (req: Request, res: Response) => {
+  const db = await getDb();
+  const { id } = req.params;
+
+  const row = db.prepare("SELECT type, ext FROM assets WHERE id = ?").get(id) as Record<string, unknown> | undefined;
+  if (!row) {
+    res.status(404).json({ error: "Asset not found" });
+    return;
+  }
+  if (row.type !== "digital") {
+    res.status(400).json({ error: "Only digital assets support usage tracking" });
+    return;
+  }
+
+  const ext = JSON.parse(row.ext as string || "{}") as Record<string, unknown>;
+  const now = new Date().toISOString();
+  ext.usage_stats = {
+    ...((ext.usage_stats as Record<string, unknown>) ?? {}),
+    last_access: now,
+  };
+
+  db.prepare("UPDATE assets SET ext = ?, updated_at = ? WHERE id = ?").run(
+    JSON.stringify(ext), now, id
+  );
+
+  db.prepare(
+    "UPDATE notifications SET is_dismissed = 1 WHERE asset_id = ? AND type = 'usage_stagnation' AND is_dismissed = 0"
+  ).run(id);
+
+  const updated = db.prepare("SELECT * FROM assets WHERE id = ?").get(id) as Record<string, unknown>;
+  res.json({
+    ...updated,
+    tags: JSON.parse(updated.tags as string || "[]"),
+    ext: JSON.parse(updated.ext as string || "{}"),
+  });
+});
+
 // POST /api/assets/:id/screenshot — 上传订阅截图
 router.post("/:id/screenshot", screenshotUpload.single("screenshot"), async (req: Request, res: Response) => {
   const db = await getDb();

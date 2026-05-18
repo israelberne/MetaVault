@@ -34,6 +34,10 @@ export function deleteAsset(id: string): Promise<void> {
   return apiFetch(`/assets/${id}`, { method: "DELETE" });
 }
 
+export function markAssetUsed(id: string): Promise<Asset> {
+  return apiFetch<Asset>(`/assets/${id}/usage`, { method: "PATCH" });
+}
+
 export async function uploadScreenshot(assetId: string, file: File): Promise<{ screenshot_url: string }> {
   const formData = new FormData();
   formData.append("screenshot", file);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, Search, Trash2, CheckSquare, Square, X } from "lucide-react";
 import { useAssets, useDeleteAsset, useUpdateAsset } from "@/hooks/useAssets";
+import { fetchRelations } from "@/lib/api-relations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -75,8 +76,27 @@ function AssetList() {
     setBatchStatus("");
   }
 
-  function batchDelete() {
-    if (!confirm(`确定删除 ${selected.size} 个资产？`)) return;
+  async function batchDelete() {
+    let message = `确定删除 ${selected.size} 个资产？`;
+    try {
+      const allRelations = await Promise.all(
+        [...selected].map((id) => fetchRelations(id))
+      );
+      const uniqueIds = new Set<string>();
+      let total = 0;
+      for (const rels of allRelations) {
+        for (const r of rels) {
+          if (!uniqueIds.has(r.id)) {
+            uniqueIds.add(r.id);
+            total++;
+          }
+        }
+      }
+      if (total > 0) {
+        message = `删除 ${selected.size} 个资产？将同时移除 ${total} 个关联关系。`;
+      }
+    } catch {}
+    if (!confirm(message)) return;
     selected.forEach((id) => deleteAsset.mutate(id));
     exitSelectMode();
   }

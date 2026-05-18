@@ -13,11 +13,16 @@ export interface PhysicalExt {
   source?: string;
 }
 
+export interface UsageStats {
+  last_access?: string;
+}
+
 export interface DigitalExt {
   platform?: string;
   account?: string;
   expiry_date?: string;
   auto_renew?: boolean;
+  usage_stats?: UsageStats;
 }
 
 export interface SubscriptionExt {

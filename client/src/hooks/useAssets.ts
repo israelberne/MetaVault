@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchAssets, fetchAsset, createAsset, updateAsset, deleteAsset } from "@/lib/api-assets";
+import { fetchAssets, fetchAsset, createAsset, updateAsset, deleteAsset, markAssetUsed } from "@/lib/api-assets";
 import type { AssetInput, AssetFilters } from "@/types/asset";
 
 export function useAssets(filters?: AssetFilters) {
@@ -40,6 +40,21 @@ export function useDeleteAsset() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteAsset(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["assets"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["assets"] });
+      qc.invalidateQueries({ queryKey: ["relations"] });
+    },
+  });
+}
+
+export function useMarkAssetUsed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => markAssetUsed(id),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ["assets"] });
+      qc.invalidateQueries({ queryKey: ["assets", id] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    },
   });
 }

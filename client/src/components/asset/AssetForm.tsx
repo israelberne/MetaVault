@@ -276,6 +276,16 @@ function AssetForm() {
             <Label>账号</Label>
             <Input value={(form.ext as Record<string, unknown>).account as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, account: e.target.value } }))} />
           </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={(form.ext as Record<string, unknown>).auto_renew as boolean ?? false}
+                onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, auto_renew: e.target.checked } }))}
+              />
+              自动续期
+            </label>
+          </div>
         </div>
       )}
 

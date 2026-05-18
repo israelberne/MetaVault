@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Pencil, Trash2, ArrowLeft } from "lucide-react";
-import { useAsset, useDeleteAsset } from "@/hooks/useAssets";
+import { useAsset, useDeleteAsset, useMarkAssetUsed } from "@/hooks/useAssets";
 import { useRelations } from "@/hooks/useRelations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ function AssetDetail() {
   const { data: asset, isLoading } = useAsset(id!);
   const { data: relations } = useRelations(id!);
   const deleteAsset = useDeleteAsset();
+  const markUsed = useMarkAssetUsed();
 
   if (isLoading) return <Skeleton className="h-64 rounded-lg" />;
   if (!asset) return <div className="text-muted-foreground">资产不存在</div>;
@@ -28,7 +29,16 @@ function AssetDetail() {
   const ext = asset.ext as Record<string, unknown>;
 
   function handleDelete() {
-    if (confirm("确定删除此资产？关联关系也会一并删除。")) {
+    const relCount = relations?.length ?? 0;
+    let message = "确定删除此资产？";
+    if (relCount > 0) {
+      const names = relations!.slice(0, 3).map((r) =>
+        r.source_id === id ? r.target_name : r.source_name
+      );
+      const suffix = relCount > 3 ? `等 ${relCount} 个` : `${relCount} 个`;
+      message = `此资产有 ${suffix}关联关系（${names.join("、")}）。删除后这些关系将一并移除。确定删除？`;
+    }
+    if (confirm(message)) {
       deleteAsset.mutate(id!, { onSuccess: () => navigate("/assets") });
     }
   }
@@ -102,6 +112,14 @@ function AssetDetail() {
               {ext.platform && <div><span className="text-muted-foreground">平台：</span>{ext.platform as string}</div>}
               {ext.account && <div><span className="text-muted-foreground">账号：</span>{ext.account as string}</div>}
               {ext.expiry_date && <div><span className="text-muted-foreground">到期日：</span>{ext.expiry_date as string}</div>}
+              {((ext as Record<string, unknown>).usage_stats as { last_access?: string } | undefined)?.last_access && (
+                <div><span className="text-muted-foreground">上次使用：</span>{new Date(((ext as Record<string, unknown>).usage_stats as { last_access?: string }).last_access!).toLocaleString("zh-CN")}</div>
+              )}
+              <div className="md:col-span-2">
+                <Button variant="outline" size="sm" onClick={() => markUsed.mutate(id!)} disabled={markUsed.isPending}>
+                  {markUsed.isPending ? "标记中..." : "标记已使用"}
+                </Button>
+              </div>
             </>
           )}
           {asset.type === "subscription" && (
