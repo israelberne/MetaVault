@@ -1,7 +1,5 @@
 // Force UTF-8 on Windows (code page 936 defaults to GBK)
 if (process.platform === 'win32') {
-  process.stdout.setEncoding('utf8');
-  process.stderr.setEncoding('utf8');
   if (!process.env.LANG) process.env.LANG = 'en_US.UTF-8';
 }
 
@@ -29,6 +27,20 @@ app.use(express.json());
 
 // 提供上传文件静态访问
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+// Test-only reset endpoint
+if (process.env.NODE_ENV === "test") {
+  app.post("/api/test/reset", async (_req, res) => {
+    const db = await getDb();
+    db.exec("DELETE FROM asset_relations");
+    db.exec("DELETE FROM notifications");
+    db.exec("DELETE FROM screenshots");
+    db.exec("DELETE FROM push_subscriptions");
+    db.exec("DELETE FROM assets");
+    db.exec("DELETE FROM suppliers");
+    res.json({ success: true });
+  });
+}
 
 app.use("/api/assets", assetsRouter);
 app.use("/api/suppliers", suppliersRouter);

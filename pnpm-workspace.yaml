@@ -1,6 +1,7 @@
 packages:
   - 'client'
   - 'server'
+  - 'e2e'
 allowBuilds:
   better-sqlite3: true
   esbuild: true

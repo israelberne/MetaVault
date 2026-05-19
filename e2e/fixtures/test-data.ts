@@ -1,0 +1,78 @@
+export const testAsset = {
+  physical: {
+    name: "测试 MacBook Pro",
+    type: "physical",
+    category: "physical.laptop",
+    status: "active",
+    tags: ["办公设备"],
+    purchase_date: "2025-06-01",
+    purchase_price: 14999,
+    currency: "CNY",
+    notes: "主力开发机",
+    ext: {
+      model: "MacBook Pro 14 M3 Pro",
+      quantity: 1,
+      unit: "台",
+      location: "书房",
+      usage: "日常办公",
+      owner: "LoganLink",
+      source: "purchase",
+      warranty_expiry: "2028-06-01",
+      serial_number: "TEST-SN-001",
+    },
+  },
+  digital: {
+    name: "测试 Udemy 课程",
+    type: "digital",
+    category: "digital.course",
+    status: "active",
+    tags: ["学习"],
+    purchase_date: "2025-01-15",
+    purchase_price: 49,
+    currency: "CNY",
+    ext: {
+      platform: "Udemy",
+      expiry_date: "2027-01-15",
+      usage_stats: { last_access: "2026-05-01" },
+    },
+  },
+  subscription: {
+    name: "测试 ChatGPT Plus",
+    type: "subscription",
+    category: "subscription.saas",
+    status: "active",
+    tags: ["AI工具"],
+    purchase_date: "2025-03-01",
+    purchase_price: 20,
+    currency: "CNY",
+    ext: {
+      billing_cycle: "monthly",
+      amount: 20,
+      next_billing_date: "2026-06-01",
+      auto_renew: true,
+      usage_frequency: "daily",
+    },
+  },
+};
+
+export const testSupplier = {
+  name: "测试 Apple Store",
+  type: "physical",
+  rating: 5,
+  tags: ["靠谱", "售后好"],
+  contact: "400-666-8800",
+  website: "https://apple.com",
+  notes: "官方渠道，保修可靠",
+  is_favorite: true,
+};
+
+export const testSupplierDigital = {
+  name: "测试 Steam",
+  type: "digital",
+  rating: 4,
+  tags: ["游戏平台"],
+  contact: null,
+  website: "https://store.steampowered.com",
+  notes: "游戏购买平台",
+  is_favorite: false,
+};

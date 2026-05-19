@@ -1,1 +1,12 @@
-{"name": "metavault", "private": true, "scripts": {"dev": "pnpm -r --parallel run dev", "dev:client": "pnpm --filter @metavault/client run dev", "dev:server": "pnpm --filter @metavault/server run dev", "build": "pnpm -r run build"}}
+{
+  "name": "metavault",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "dev:client": "pnpm --filter @metavault/client run dev",
+    "dev:server": "pnpm --filter @metavault/server run dev",
+    "build": "pnpm -r run build",
+    "e2e": "pnpm build && pnpm --filter @metavault/e2e run test",
+    "e2e:headed": "pnpm build && pnpm --filter @metavault/e2e run test:headed"
+  }
+}

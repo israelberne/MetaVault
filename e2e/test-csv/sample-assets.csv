@@ -1,0 +1,4 @@
+name,type,category,status,purchase_date,purchase_price,notes
+ThinkPad X1 Carbon,physical,physical.laptop,active,2024-03-01,8999,办公笔记本
+Kindle Oasis,digital,digital.ebook,active,2024-06-15,1599,电子阅读器
+Spotify,subscription,subscription.streaming,active,2024-01-01,15,音乐订阅
