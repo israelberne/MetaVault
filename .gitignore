@@ -24,3 +24,8 @@ Thumbs.db
 # Debug / temp
 screenshots/
 *.log
+
+# E2E test artifacts
+e2e/test-results/
+e2e/playwright-report/
+e2e/debug-*.png
