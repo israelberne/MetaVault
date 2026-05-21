@@ -381,3 +381,75 @@ Notion导出CSV的常见列名自动映射：
 - URL → ext.access_url
 
 用户可在此基础上调整映射。
+
+---
+
+## 6. E2E 测试架构
+
+### 6.1 技术选型
+
+- **Playwright** — 浏览器自动化测试框架
+- **生产构建测试** — 测试运行在 `pnpm build` 后的生产构建上，而非 dev server
+- **API 种子数据** — 通过 REST API 创建测试数据，不直接操作数据库
+
+### 6.2 目录结构
+
+```
+e2e/
+├── playwright.config.ts       # Playwright 配置（自动启动生产服务器）
+├── fixtures/
+│   ├── test-fixtures.ts       # 自定义 test fixture（每个测试前重置 DB）
+│   ├── seed.ts                # API 种子函数（resetDb, createAsset, createSupplier, scanNotifications）
+│   └── test-data.ts           # 测试数据常量
+├── helpers/
+│   └── common.ts              # 通用测试辅助函数
+└── specs/
+    ├── dashboard.spec.ts      # 仪表盘（空态 / 有数据）
+    ├── asset-crud.spec.ts     # 资产查看 / 删除 / 表单创建（5 个测试）
+    ├── asset-list.spec.ts     # 资产列表筛选 / 搜索
+    ├── supplier-crud.spec.ts  # 供应商查看 / 删除
+    ├── cross-nav.spec.ts      # 跨页面导航（资产→供应商）
+    ├── import-export.spec.ts  # 数据导出
+    ├── notifications.spec.ts  # 通知查看 / 标记已读
+    └── mobile.spec.ts         # 移动端底部导航
+```
+
+### 6.3 测试隔离
+
+- 每个测试前通过 `POST /api/test/reset` 清空所有表
+- `DB_PATH` 环境变量指向独立测试数据库 `data/metavault-test.db`
+- `NODE_ENV=test` 启用测试专用 reset 端点
+- 自定义 fixture 自动处理重置：
+
+```typescript
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    await resetDb();
+    await use(page);
+  },
+});
+```
+
+### 6.4 表单测试与 React 19
+
+Playwright 的 `fill()` 直接设置 DOM value，不触发 React 19 的 synthetic event，导致表单 state 不更新。解决方案：
+
+```typescript
+// 用 nativeInputValueSetter + dispatchEvent 触发 React state 更新
+await nameInput.evaluate((el: HTMLInputElement) => {
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype, "value"
+  )?.set;
+  setter?.call(el, "TestLaptop");
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+});
+```
+
+shadcn/ui 的 Radix Select 组件在 DOM 中表现为 `combobox` role（不是 `button`），选择器需用 `getByRole("combobox")`。
+
+### 6.5 运行命令
+
+```bash
+pnpm e2e          # 构建并运行全部 E2E 测试
+pnpm e2e:headed   # 有头模式，可视化调试
+```

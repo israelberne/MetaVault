@@ -11,6 +11,7 @@ export interface PhysicalExt {
   usage?: string;
   owner?: string;
   source?: string;
+  current_value?: number;
 }
 
 export interface UsageStats {
@@ -57,11 +58,11 @@ export interface AssetInput {
   category: string;
   status?: AssetStatus;
   tags?: string[];
-  purchase_date?: string | null;
-  purchase_price?: number | null;
+  purchase_date?: string;
+  purchase_price?: number;
   currency?: string;
-  supplier_id?: string | null;
-  notes?: string | null;
+  supplier_id?: string;
+  notes?: string;
   ext?: PhysicalExt | DigitalExt | SubscriptionExt;
 }
 

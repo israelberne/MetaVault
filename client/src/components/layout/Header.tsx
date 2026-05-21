@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Bell, Search, X, BellOff } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +41,7 @@ function PushToggle() {
       } else {
         const publicKey = await getVapidPublicKey();
         if (!publicKey) {
-          alert("Web Push 未配置，请检查服务器 VAPID 密钥");
+          toast.error("Web Push 未配置，请检查服务器 VAPID 密钥");
           return;
         }
         const reg = await navigator.serviceWorker.register("/sw.js");
@@ -52,7 +53,7 @@ function PushToggle() {
         setPushEnabled(true);
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "推送设置失败");
+      toast.error(err instanceof Error ? err.message : "推送设置失败");
     }
     setLoading(false);
   }
@@ -119,7 +120,7 @@ function Header() {
             )}
           </Button>
           {notifOpen && notifications && notifications.length > 0 && (
-            <div className="absolute right-0 top-full mt-1 w-72 rounded-md border bg-card shadow-lg z-50 max-h-64 overflow-y-auto">
+            <div className="absolute left-0 top-full mt-1 w-72 rounded-md border bg-card shadow-lg z-50 max-h-64 overflow-y-auto">
               {notifications.slice(0, 10).map((n: any) => (
                 <div
                   key={n.id}

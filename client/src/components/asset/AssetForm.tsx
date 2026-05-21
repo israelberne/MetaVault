@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Upload, Camera, Star } from "lucide-react";
+import { Upload } from "lucide-react";
+import { toast } from "sonner";
 import { useAsset, useCreateAsset, useUpdateAsset } from "@/hooks/useAssets";
 import { useFilteredSuppliers } from "@/hooks/useSuppliers";
 import { ocrRecognize } from "@/lib/api-assets";
@@ -16,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { AssetType, AssetStatus, AssetInput } from "@/types/asset";
+import type { AssetType, AssetStatus, AssetInput, PhysicalExt, DigitalExt, SubscriptionExt } from "@/types/asset";
 import { categoryLabels } from "@/types/asset";
 
 const assetTypes: { value: AssetType; label: string }[] = [
@@ -51,7 +52,7 @@ function ScreenshotOcr({ onOcrResult }: { onOcrResult: (r: OcrResult) => void })
       setOcrResult(result);
       onOcrResult(result);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "OCR 识别失败");
+      toast.error(err instanceof Error ? err.message : "OCR 识别失败");
     }
     setOcrLoading(false);
   }
@@ -94,15 +95,14 @@ function AssetForm() {
     category: "physical.laptop",
     status: "active",
     tags: [],
-    purchase_date: null,
-    purchase_price: null,
+    purchase_date: undefined,
+    purchase_price: undefined,
     currency: "CNY",
-    supplier_id: null,
-    notes: null,
+    supplier_id: undefined,
+    notes: undefined,
     ext: {},
   });
 
-  // 编辑模式：加载已有数据
   if (isEdit && existing && form.name === "") {
     setForm({
       name: existing.name,
@@ -110,11 +110,11 @@ function AssetForm() {
       category: existing.category,
       status: existing.status,
       tags: existing.tags,
-      purchase_date: existing.purchase_date,
-      purchase_price: existing.purchase_price,
+      purchase_date: existing.purchase_date ?? undefined,
+      purchase_price: existing.purchase_price ?? undefined,
       currency: existing.currency,
-      supplier_id: existing.supplier_id,
-      notes: existing.notes,
+      supplier_id: existing.supplier_id ?? undefined,
+      notes: existing.notes ?? undefined,
       ext: existing.ext,
     });
   }
@@ -125,8 +125,27 @@ function AssetForm() {
     form.type ? { type: form.type } : {}
   );
 
+  function validateForm(f: AssetInput): string | null {
+    const today = new Date().toISOString().slice(0, 10);
+    if (f.purchase_date && f.purchase_date > today) return "获取日期不能超过今天";
+    const ext = f.ext as Record<string, unknown>;
+    if (f.type === "physical" && ext) {
+      if (ext.warranty_expiry && f.purchase_date && ext.warranty_expiry <= f.purchase_date)
+        return "保修到期日应晚于获取日期";
+    }
+    if (f.type === "subscription" && ext) {
+      if (f.status === "active" && ext.next_billing_date && ext.next_billing_date <= today)
+        return "活跃订阅的下次扣费日应是未来日期";
+      if (ext.trial_end && f.purchase_date && ext.trial_end <= f.purchase_date)
+        return "试用到期日应晚于获取日期";
+    }
+    return null;
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const error = validateForm(form);
+    if (error) { toast.error(error); return; }
     if (isEdit) {
       update.mutate({ id: id!, input: form }, { onSuccess: () => navigate(`/assets/${id}`) });
     } else {
@@ -144,6 +163,11 @@ function AssetForm() {
   function removeTag(tag: string) {
     setForm((f) => ({ ...f, tags: f.tags?.filter((t) => t !== tag) }));
   }
+
+  // 块级 cast：按类型获取 ext，消除逐属性断言
+  const pExt = form.type === "physical" ? (form.ext as PhysicalExt) : null;
+  const dExt = form.type === "digital" ? (form.ext as DigitalExt) : null;
+  const sExt = form.type === "subscription" ? (form.ext as SubscriptionExt) : null;
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
@@ -187,19 +211,19 @@ function AssetForm() {
 
         <div className="space-y-2">
           <Label>获取日期</Label>
-          <Input type="date" value={form.purchase_date ?? ""} onChange={(e) => setForm((f) => ({ ...f, purchase_date: e.target.value || null }))} />
+          <Input type="date" value={form.purchase_date ?? ""} onChange={(e) => setForm((f) => ({ ...f, purchase_date: e.target.value || undefined }))} />
         </div>
 
         <div className="space-y-2">
           <Label>获取价格</Label>
-          <Input type="number" value={form.purchase_price ?? ""} onChange={(e) => setForm((f) => ({ ...f, purchase_price: e.target.value ? Number(e.target.value) : null }))} />
+          <Input type="number" value={form.purchase_price ?? ""} onChange={(e) => setForm((f) => ({ ...f, purchase_price: e.target.value ? Number(e.target.value) : undefined }))} />
         </div>
 
         <div className="space-y-2">
           <Label>供应商</Label>
           <Select
             value={form.supplier_id ?? "none"}
-            onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === "none" ? null : v }))}
+            onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === "none" ? undefined : v }))}
           >
             <SelectTrigger className="w-full"><SelectValue placeholder="选择供应商" /></SelectTrigger>
             <SelectContent>
@@ -221,9 +245,9 @@ function AssetForm() {
           <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="输入标签后回车" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} />
           <Button type="button" variant="secondary" onClick={addTag}>添加</Button>
         </div>
-        {form.tags?.length > 0 && (
+        {(form.tags?.length ?? 0) > 0 && (
           <div className="flex gap-1.5 flex-wrap">
-            {form.tags.map((tag) => (
+            {form.tags!.map((tag) => (
               <span key={tag} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs cursor-pointer" onClick={() => removeTag(tag)}>
                 {tag} <span className="text-muted-foreground">×</span>
               </span>
@@ -235,39 +259,39 @@ function AssetForm() {
       {/* 备注 */}
       <div className="space-y-2">
         <Label>备注</Label>
-        <Textarea value={form.notes ?? ""} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value || null }))} rows={3} />
+        <Textarea value={form.notes ?? ""} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value || undefined }))} rows={3} />
       </div>
 
-      {/* 类型扩展字段 */}
-      {form.type === "physical" && (
+      {/* 物理资产扩展字段 */}
+      {pExt && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>规格型号</Label>
-            <Input value={(form.ext as Record<string, unknown>).model as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, model: e.target.value } }))} />
+            <Input value={pExt.model ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), model: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>数量</Label>
-            <Input type="number" value={(form.ext as Record<string, unknown>).quantity as number ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, quantity: e.target.value ? Number(e.target.value) : null } }))} />
+            <Input type="number" value={pExt.quantity ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), quantity: e.target.value ? Number(e.target.value) : undefined } }))} />
           </div>
           <div className="space-y-2">
             <Label>计量单位</Label>
-            <Input value={(form.ext as Record<string, unknown>).unit as string ?? ""} placeholder="个/台/套" onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, unit: e.target.value } }))} />
+            <Input value={pExt.unit ?? ""} placeholder="个/台/套" onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), unit: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>存放位置</Label>
-            <Input value={(form.ext as Record<string, unknown>).location as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, location: e.target.value } }))} />
+            <Input value={pExt.location ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), location: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>用途场景</Label>
-            <Input value={(form.ext as Record<string, unknown>).usage as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, usage: e.target.value } }))} />
+            <Input value={pExt.usage ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), usage: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>归属人</Label>
-            <Input value={(form.ext as Record<string, unknown>).owner as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, owner: e.target.value } }))} />
+            <Input value={pExt.owner ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), owner: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>资产来源</Label>
-            <Select value={(form.ext as Record<string, unknown>).source as string ?? "purchase"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...f.ext, source: v } }))}>
+            <Select value={pExt.source ?? "purchase"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), source: v } }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="purchase">购入</SelectItem>
@@ -279,35 +303,36 @@ function AssetForm() {
           </div>
           <div className="space-y-2">
             <Label>保修到期日</Label>
-            <Input type="date" value={(form.ext as Record<string, unknown>).warranty_expiry as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, warranty_expiry: e.target.value } }))} />
+            <Input type="date" value={pExt.warranty_expiry ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), warranty_expiry: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>序列号</Label>
-            <Input value={(form.ext as Record<string, unknown>).serial_number as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, serial_number: e.target.value } }))} />
+            <Input value={pExt.serial_number ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as PhysicalExt), serial_number: e.target.value } }))} />
           </div>
         </div>
       )}
 
-      {form.type === "digital" && (
+      {/* 数字资产扩展字段 */}
+      {dExt && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>平台</Label>
-            <Input value={(form.ext as Record<string, unknown>).platform as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, platform: e.target.value } }))} />
+            <Input value={dExt.platform ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as DigitalExt), platform: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>到期日</Label>
-            <Input type="date" value={(form.ext as Record<string, unknown>).expiry_date as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, expiry_date: e.target.value } }))} />
+            <Input type="date" value={dExt.expiry_date ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as DigitalExt), expiry_date: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>账号</Label>
-            <Input value={(form.ext as Record<string, unknown>).account as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, account: e.target.value } }))} />
+            <Input value={dExt.account ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as DigitalExt), account: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium">
               <input
                 type="checkbox"
-                checked={(form.ext as Record<string, unknown>).auto_renew as boolean ?? false}
-                onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, auto_renew: e.target.checked } }))}
+                checked={dExt.auto_renew ?? false}
+                onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as DigitalExt), auto_renew: e.target.checked } }))}
               />
               自动续期
             </label>
@@ -315,11 +340,12 @@ function AssetForm() {
         </div>
       )}
 
-      {form.type === "subscription" && (
+      {/* 订阅扩展字段 */}
+      {sExt && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>计费周期</Label>
-            <Select value={(form.ext as Record<string, unknown>).billing_cycle as string ?? "monthly"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...f.ext, billing_cycle: v } }))}>
+            <Select value={sExt.billing_cycle ?? "monthly"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...(f.ext as SubscriptionExt), billing_cycle: v as SubscriptionExt["billing_cycle"] } }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="monthly">月付</SelectItem>
@@ -330,19 +356,19 @@ function AssetForm() {
           </div>
           <div className="space-y-2">
             <Label>每期费用</Label>
-            <Input type="number" value={(form.ext as Record<string, unknown>).amount as number ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, amount: e.target.value ? Number(e.target.value) : null } }))} />
+            <Input type="number" value={sExt.amount ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as SubscriptionExt), amount: e.target.value ? Number(e.target.value) : undefined } }))} />
           </div>
           <div className="space-y-2">
             <Label>下次扣费日</Label>
-            <Input type="date" value={(form.ext as Record<string, unknown>).next_billing_date as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, next_billing_date: e.target.value } }))} />
+            <Input type="date" value={sExt.next_billing_date ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as SubscriptionExt), next_billing_date: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>试用到期日</Label>
-            <Input type="date" value={(form.ext as Record<string, unknown>).trial_end as string ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...f.ext, trial_end: e.target.value } }))} />
+            <Input type="date" value={sExt.trial_end ?? ""} onChange={(e) => setForm((f) => ({ ...f, ext: { ...(f.ext as SubscriptionExt), trial_end: e.target.value } }))} />
           </div>
           <div className="space-y-2">
             <Label>使用频率</Label>
-            <Select value={(form.ext as Record<string, unknown>).usage_frequency as string ?? "monthly"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...f.ext, usage_frequency: v } }))}>
+            <Select value={sExt.usage_frequency ?? "monthly"} onValueChange={(v) => setForm((f) => ({ ...f, ext: { ...(f.ext as SubscriptionExt), usage_frequency: v as SubscriptionExt["usage_frequency"] } }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="daily">每天</SelectItem>
@@ -359,7 +385,7 @@ function AssetForm() {
                 ...f,
                 name: r.service_name ?? f.name,
                 ext: {
-                  ...f.ext,
+                  ...(f.ext as SubscriptionExt),
                   ...(r.amount != null && { amount: r.amount }),
                   ...(r.billing_cycle && { billing_cycle: r.billing_cycle }),
                   ...(r.next_billing_date && { next_billing_date: r.next_billing_date }),

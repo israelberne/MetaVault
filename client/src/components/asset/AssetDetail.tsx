@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AssetType, AssetStatus } from "@/types/asset";
+import type { AssetType, AssetStatus, PhysicalExt, DigitalExt, SubscriptionExt } from "@/types/asset";
 import { categoryLabels } from "@/types/asset";
 
 const typeLabels: Record<AssetType, string> = { physical: "物理资产", digital: "数字资产", subscription: "订阅" };
@@ -62,7 +62,10 @@ function AssetDetail() {
   if (isLoading) return <Skeleton className="h-64 rounded-lg" />;
   if (!asset) return <div className="text-muted-foreground">资产不存在</div>;
 
-  const ext = asset.ext as Record<string, unknown>;
+  // 块级 cast：按类型获取 ext
+  const pExt = asset.type === "physical" ? (asset.ext as PhysicalExt) : null;
+  const dExt = asset.type === "digital" ? (asset.ext as DigitalExt) : null;
+  const sExt = asset.type === "subscription" ? (asset.ext as SubscriptionExt) : null;
 
   function handleDelete() {
     const relCount = relations?.length ?? 0;
@@ -139,25 +142,25 @@ function AssetDetail() {
       <Card>
         <CardHeader><CardTitle>类型详情</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          {asset.type === "physical" && (
+          {pExt && (
             <>
-              {ext.model && <div><span className="text-muted-foreground">规格型号：</span>{ext.model as string}</div>}
-              {ext.quantity != null && <div><span className="text-muted-foreground">数量：</span>{ext.quantity as number}{ext.unit ? ` ${ext.unit as string}` : ""}</div>}
-              {ext.location && <div><span className="text-muted-foreground">存放位置：</span>{ext.location as string}</div>}
-              {ext.usage && <div><span className="text-muted-foreground">用途场景：</span>{ext.usage as string}</div>}
-              {ext.owner && <div><span className="text-muted-foreground">归属人：</span>{ext.owner as string}</div>}
-              {ext.source && <div><span className="text-muted-foreground">资产来源：</span>{sourceLabels[ext.source as string] ?? ext.source as string}</div>}
-              {ext.warranty_expiry && <div><span className="text-muted-foreground">保修到期：</span>{ext.warranty_expiry as string}</div>}
-              {ext.serial_number && <div><span className="text-muted-foreground">序列号：</span>{ext.serial_number as string}</div>}
+              {pExt.model && <div><span className="text-muted-foreground">规格型号：</span>{pExt.model}</div>}
+              {pExt.quantity != null && <div><span className="text-muted-foreground">数量：</span>{pExt.quantity}{pExt.unit ? ` ${pExt.unit}` : ""}</div>}
+              {pExt.location && <div><span className="text-muted-foreground">存放位置：</span>{pExt.location}</div>}
+              {pExt.usage && <div><span className="text-muted-foreground">用途场景：</span>{pExt.usage}</div>}
+              {pExt.owner && <div><span className="text-muted-foreground">归属人：</span>{pExt.owner}</div>}
+              {pExt.source && <div><span className="text-muted-foreground">资产来源：</span>{sourceLabels[pExt.source] ?? pExt.source}</div>}
+              {pExt.warranty_expiry && <div><span className="text-muted-foreground">保修到期：</span>{pExt.warranty_expiry}</div>}
+              {pExt.serial_number && <div><span className="text-muted-foreground">序列号：</span>{pExt.serial_number}</div>}
             </>
           )}
-          {asset.type === "digital" && (
+          {dExt && (
             <>
-              {ext.platform && <div><span className="text-muted-foreground">平台：</span>{ext.platform as string}</div>}
-              {ext.account && <div><span className="text-muted-foreground">账号：</span>{ext.account as string}</div>}
-              {ext.expiry_date && <div><span className="text-muted-foreground">到期日：</span>{ext.expiry_date as string}</div>}
-              {((ext as Record<string, unknown>).usage_stats as { last_access?: string } | undefined)?.last_access && (
-                <div><span className="text-muted-foreground">上次使用：</span>{new Date(((ext as Record<string, unknown>).usage_stats as { last_access?: string }).last_access!).toLocaleString("zh-CN")}</div>
+              {dExt.platform && <div><span className="text-muted-foreground">平台：</span>{dExt.platform}</div>}
+              {dExt.account && <div><span className="text-muted-foreground">账号：</span>{dExt.account}</div>}
+              {dExt.expiry_date && <div><span className="text-muted-foreground">到期日：</span>{dExt.expiry_date}</div>}
+              {dExt.usage_stats?.last_access && (
+                <div><span className="text-muted-foreground">上次使用：</span>{new Date(dExt.usage_stats.last_access).toLocaleString("zh-CN")}</div>
               )}
               <div className="md:col-span-2">
                 <Button variant="outline" size="sm" onClick={() => markUsed.mutate(id!)} disabled={markUsed.isPending}>
@@ -166,36 +169,36 @@ function AssetDetail() {
               </div>
             </>
           )}
-          {asset.type === "subscription" && (
+          {sExt && (
             <>
-              {ext.billing_cycle && <div><span className="text-muted-foreground">计费周期：</span>{ext.billing_cycle as string}</div>}
-              {ext.amount != null && <div><span className="text-muted-foreground">每期费用：</span>¥{Number(ext.amount).toLocaleString()}</div>}
-              {ext.next_billing_date && <div><span className="text-muted-foreground">下次扣费：</span>{ext.next_billing_date as string}</div>}
-              {ext.trial_end && <div><span className="text-muted-foreground">试用到期：</span>{ext.trial_end as string}</div>}
-              {ext.usage_frequency && <div><span className="text-muted-foreground">使用频率：</span>{usageFreqLabels[ext.usage_frequency as string] ?? ext.usage_frequency as string}</div>}
-              {ext.screenshot_url && (
+              {sExt.billing_cycle && <div><span className="text-muted-foreground">计费周期：</span>{sExt.billing_cycle}</div>}
+              {sExt.amount != null && <div><span className="text-muted-foreground">每期费用：</span>¥{Number(sExt.amount).toLocaleString()}</div>}
+              {sExt.next_billing_date && <div><span className="text-muted-foreground">下次扣费：</span>{sExt.next_billing_date}</div>}
+              {sExt.trial_end && <div><span className="text-muted-foreground">试用到期：</span>{sExt.trial_end}</div>}
+              {sExt.usage_frequency && <div><span className="text-muted-foreground">使用频率：</span>{usageFreqLabels[sExt.usage_frequency] ?? sExt.usage_frequency}</div>}
+              {sExt.screenshot_url && (
                 <div className="md:col-span-2">
                   <span className="text-muted-foreground">订阅截图：</span>
-                  <img src={ext.screenshot_url as string} alt="订阅截图" className="mt-1 max-w-xs rounded-md border" />
+                  <img src={sExt.screenshot_url} alt="订阅截图" className="mt-1 max-w-xs rounded-md border" />
                 </div>
               )}
             </>
           )}
-          {!Object.keys(ext).length && <div className="text-muted-foreground">无扩展信息</div>}
+          {!pExt && !dExt && !sExt && <div className="text-muted-foreground">无扩展信息</div>}
         </CardContent>
       </Card>
 
       {/* 推荐替换供应商（折旧物理资产） */}
-      {asset.type === "physical" && ext.current_value != null && asset.purchase_price != null && Number(ext.current_value) <= Number(asset.purchase_price) * 0.1 && (
+      {asset.type === "physical" && pExt?.current_value != null && asset.purchase_price != null && Number(pExt.current_value) <= Number(asset.purchase_price) * 0.1 && (
         <ReplacementSuppliers navigate={navigate} />
       )}
 
       {/* 关联资产 */}
-      {relations?.length > 0 && (
+      {(relations?.length ?? 0) > 0 && (
         <Card>
           <CardHeader><CardTitle>关联资产</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {relations.map((r) => (
+            {relations!.map((r) => (
               <div key={r.id} className="flex items-center gap-2">
                 <Badge variant="outline">{relationLabels[r.relation]}</Badge>
                 <span className="cursor-pointer hover:underline" onClick={() => navigate(`/assets/${r.source_id === id ? r.target_id : r.source_id}`)}>

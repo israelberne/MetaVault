@@ -6,7 +6,7 @@
 ## 技术栈
 - 后端：Node.js + Express 5 + better-sqlite3
 - 前端：React 19 + TypeScript + Vite + Tailwind CSS v4
-- UI：shadcn/ui（简约留白风格）
+- UI：shadcn/ui（简约留白风格）+ sonner（toast 通知）
 - 数据获取：React Query v5
 - 路由：React Router v7
 - 包管理：pnpm workspace monorepo
@@ -15,7 +15,7 @@
 ```
 /client       - React前端（Vite + Tailwind + shadcn/ui）
   src/
-    components/   UI 组件（asset / supplier / dashboard / import / export / notification / layout）
+    components/   UI 组件（asset / supplier / dashboard / import / export / notification / relation / layout）
     hooks/        React Query hooks
     lib/          API 封装（api-client + api-*）
     types/        TypeScript 类型
@@ -25,6 +25,10 @@
     routes/       REST API 路由（assets / suppliers / relations / notifications / import / dashboard / export）
     services/     提醒扫描 + OCR识别 + Web Push服务
     middleware/    错误处理
+/e2e          - Playwright E2E 测试
+  fixtures/      测试夹具（DB重置 + 种子数据 + 测试数据常量）
+  helpers/       测试辅助工具
+  specs/         测试用例（8 个 spec 文件，16 个测试）
 /docs         - 产品文档（PRD / 技术设计）
 ```
 
@@ -33,6 +37,13 @@
 - `pnpm dev:client` — 仅前端（localhost:5174）
 - `pnpm dev:server` — 仅后端（localhost:3001）
 - `pnpm build` — 构建前后端
+- `pnpm e2e` — 构建并运行 E2E 测试
+- `pnpm e2e:headed` — 构建并运行 E2E 测试（有头模式）
+
+## 环境变量
+- `PORT` — 服务端口（默认 3001）
+- `DB_PATH` — SQLite 数据库路径（默认 ./data/metavault.db，E2E 测试用独立路径）
+- `NODE_ENV` — 设为 `test` 时启用 `/api/test/reset` 端点
 
 ## 功能清单
 - 资产 CRUD（物理/数字/订阅三类，扩展字段 JSON 存储）

@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/components/dashboard/Dashboard";
 import AssetList from "@/components/asset/AssetList";
@@ -13,22 +14,25 @@ import NotificationPage from "@/components/notification/NotificationPage";
 
 function App() {
   return (
-    <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/assets" element={<AssetList />} />
-        <Route path="/assets/new" element={<AssetForm />} />
-        <Route path="/assets/:id" element={<AssetDetail />} />
-        <Route path="/assets/:id/edit" element={<AssetForm />} />
-        <Route path="/suppliers" element={<SupplierList />} />
-        <Route path="/suppliers/new" element={<SupplierForm />} />
-        <Route path="/suppliers/:id" element={<SupplierDetail />} />
-        <Route path="/suppliers/:id/edit" element={<SupplierForm />} />
-        <Route path="/import" element={<ImportWizard />} />
-        <Route path="/export" element={<ExportPage />} />
-        <Route path="/notifications" element={<NotificationPage />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/assets" element={<AssetList />} />
+          <Route path="/assets/new" element={<AssetForm />} />
+          <Route path="/assets/:id" element={<AssetDetail />} />
+          <Route path="/assets/:id/edit" element={<AssetForm />} />
+          <Route path="/suppliers" element={<SupplierList />} />
+          <Route path="/suppliers/new" element={<SupplierForm />} />
+          <Route path="/suppliers/:id" element={<SupplierDetail />} />
+          <Route path="/suppliers/:id/edit" element={<SupplierForm />} />
+          <Route path="/import" element={<ImportWizard />} />
+          <Route path="/export" element={<ExportPage />} />
+          <Route path="/notifications" element={<NotificationPage />} />
+        </Route>
+      </Routes>
+      <Toaster position="top-center" richColors />
+    </>
   );
 }
 

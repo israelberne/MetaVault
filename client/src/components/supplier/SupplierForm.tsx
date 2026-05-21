@@ -93,9 +93,9 @@ function SupplierForm() {
           <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="输入标签后回车" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} />
           <Button type="button" variant="secondary" onClick={addTag}>添加</Button>
         </div>
-        {form.tags?.length > 0 && (
+        {(form.tags?.length ?? 0) > 0 && (
           <div className="flex gap-1.5 flex-wrap">
-            {form.tags.map((tag) => (
+            {form.tags!.map((tag) => (
               <span key={tag} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs cursor-pointer" onClick={() => setForm((f) => ({ ...f, tags: f.tags?.filter((t) => t !== tag) }))}>
                 {tag} <span className="text-muted-foreground">×</span>
               </span>

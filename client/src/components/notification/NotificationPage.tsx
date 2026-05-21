@@ -3,7 +3,7 @@ import { Check, EyeOff, Bell } from "lucide-react";
 import { useNotifications, useMarkRead, useDismiss } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 const typeLabels: Record<string, string> = {
   warranty_expiry: "保修到期",

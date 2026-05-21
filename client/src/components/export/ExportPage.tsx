@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Download, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
 import { exportAssets, exportSuppliers, downloadBlob } from "@/lib/api-export";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ function ExportPage() {
       const blob = await exportAssets();
       downloadBlob(blob, "assets.xlsx");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "导出失败");
+      toast.error(err instanceof Error ? err.message : "导出失败");
     }
     setLoading(null);
   }
@@ -24,7 +25,7 @@ function ExportPage() {
       const blob = await exportSuppliers();
       downloadBlob(blob, "suppliers.xlsx");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "导出失败");
+      toast.error(err instanceof Error ? err.message : "导出失败");
     }
     setLoading(null);
   }

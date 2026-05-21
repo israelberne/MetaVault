@@ -46,14 +46,19 @@ pnpm dev:server
 
 # 构建
 pnpm build
-```
+
+# E2E 测试
+pnpm e2e
+
+# E2E 测试（有头模式）
+pnpm e2e:headed
 
 ## 项目结构
 
 ```
 client/           React 前端
   src/
-    components/   UI 组件（asset / supplier / dashboard / import / export / notification / layout）
+    components/   UI 组件（asset / supplier / dashboard / import / export / notification / relation / layout）
     hooks/        React Query hooks
     lib/          API 封装（api-client + api-*）
     types/        TypeScript 类型
@@ -63,6 +68,10 @@ server/           Node.js 后端
     routes/       REST API 路由（assets / suppliers / relations / notifications / import / dashboard / export）
     services/     提醒扫描 + OCR识别 + Web Push服务
     middleware/    错误处理
+e2e/              Playwright E2E 测试
+  fixtures/       测试夹具（DB重置 + 种子数据）
+  helpers/        测试辅助工具
+  specs/          测试用例
 docs/             产品文档（PRD / 技术设计）
 ```
 
