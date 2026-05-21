@@ -405,12 +405,12 @@ e2e/
 │   └── common.ts              # 通用测试辅助函数
 └── specs/
     ├── dashboard.spec.ts      # 仪表盘（空态 / 有数据）
-    ├── asset-crud.spec.ts     # 资产查看 / 删除 / 表单创建（5 个测试）
+    ├── asset-crud.spec.ts     # 资产查看 / 删除 / 表单创建 / 编辑（6 个测试）
     ├── asset-list.spec.ts     # 资产列表筛选 / 搜索
-    ├── supplier-crud.spec.ts  # 供应商查看 / 删除
+    ├── supplier-crud.spec.ts  # 供应商查看 / 删除 / 创建 / 编辑 / 收藏切换（5 个测试）
     ├── cross-nav.spec.ts      # 跨页面导航（资产→供应商）
     ├── import-export.spec.ts  # 数据导出
-    ├── notifications.spec.ts  # 通知查看 / 标记已读
+    ├── notifications.spec.ts  # 通知查看 / 标记已读 / 忽略（2 个测试）
     └── mobile.spec.ts         # 移动端底部导航
 ```
 
@@ -446,6 +446,10 @@ await nameInput.evaluate((el: HTMLInputElement) => {
 ```
 
 shadcn/ui 的 Radix Select 组件在 DOM 中表现为 `combobox` role（不是 `button`），选择器需用 `getByRole("combobox")`。
+
+- **表单定位器**：Header 搜索框也在 `<form>` 内，`page.locator("form input")` 会匹配搜索框。需用 `page.locator("main form input")` 或 `page.locator("form input").nth(1)` 排除搜索框。
+- **编辑按钮**：shadcn `<Button>` 渲染为 `<button>` 不是 `<a>`，需用 `getByRole("button")` 不是 `getByRole("link")`。
+- **收藏验证**：SQLite 存储 `is_favorite` 为 `1`/`0` 不是 `true`/`false`，断言用 `toBeTruthy()` 不是 `toBe(true)`。
 
 ### 6.5 运行命令
 

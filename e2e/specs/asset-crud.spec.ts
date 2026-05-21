@@ -104,4 +104,32 @@ test.describe("资产 CRUD", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.getByText("TestSub")).toBeVisible();
   });
+
+  test("编辑资产名称", async ({ page }) => {
+    const asset = await createAsset(testAsset.physical);
+    await page.goto(`/assets/${asset.id}`);
+    await page.waitForLoadState("networkidle");
+
+    // 点击编辑按钮
+    await page.getByRole("button", { name: "编辑" }).click();
+    await page.waitForLoadState("networkidle");
+
+    // 修改名称（form input[0] 是搜索框，[1] 是名称输入框）
+    const nameInput = page.locator("form input").nth(1);
+    await nameInput.evaluate((el: HTMLInputElement) => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, "value"
+      )?.set;
+      setter?.call(el, "UpdatedLaptop");
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    // 提交
+    await page.getByRole("button", { name: "保存" }).click();
+    await page.waitForURL(/\/assets\/[^/]+$/, { timeout: 10000 });
+    await page.waitForLoadState("networkidle");
+
+    // 验证名称已更新
+    await expect(page.getByText("UpdatedLaptop")).toBeVisible({ timeout: 5000 });
+  });
 });
