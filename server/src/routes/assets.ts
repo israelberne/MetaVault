@@ -22,7 +22,7 @@ const screenshotUpload = multer({
 // GET /api/assets — 列表（支持筛选）
 router.get("/", async (req: Request, res: Response) => {
   const db = await getDb();
-  const { asset_type, status, category, search } = req.query;
+  const { asset_type, status, category, search, sort } = req.query;
 
   let sql = "SELECT * FROM assets WHERE 1=1";
   const params: unknown[] = [];
@@ -44,7 +44,14 @@ router.get("/", async (req: Request, res: Response) => {
     params.push(`%${search}%`, `%${search}%`);
   }
 
-  sql += " ORDER BY updated_at DESC";
+  const sortWhitelist: Record<string, string> = {
+    name: "name",
+    price: "purchase_price",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+  const sortColumn = sortWhitelist[sort as string] || "updated_at";
+  sql += ` ORDER BY ${sortColumn} DESC`;
 
   const rows = db.prepare(sql).all(...params) as Record<string, unknown>[];
   const assets = rows.map((row) => ({

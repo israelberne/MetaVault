@@ -36,3 +36,17 @@ export async function scanNotifications() {
   if (!res.ok) throw new Error(`Scan failed: ${res.status}`);
   return res.json();
 }
+
+export async function createRelation(
+  sourceId: string,
+  targetId: string,
+  relation: string
+) {
+  const res = await fetch(`${BASE}/relations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source_id: sourceId, target_id: targetId, relation }),
+  });
+  if (!res.ok) throw new Error(`Create relation failed: ${res.status}`);
+  return res.json();
+}

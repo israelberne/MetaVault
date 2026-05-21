@@ -32,10 +32,10 @@ const statusLabels: Record<AssetStatus, string> = {
 };
 
 const statusColors: Record<AssetStatus, string> = {
-  active: "bg-green-100 text-green-800",
-  idle: "bg-yellow-100 text-yellow-800",
-  expired: "bg-red-100 text-red-800",
-  disposed: "bg-gray-100 text-gray-800",
+  active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  idle: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  expired: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  disposed: "bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-400",
 };
 
 function AssetList() {
@@ -150,6 +150,23 @@ function AssetList() {
             </SelectContent>
           </Select>
 
+          <Select
+            value={filters.sort || "updated_at"}
+            onValueChange={(v) =>
+              setFilters((f) => ({ ...f, sort: v as AssetFilters["sort"] }))
+            }
+          >
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="排序" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updated_at">最近更新</SelectItem>
+              <SelectItem value="created_at">最近创建</SelectItem>
+              <SelectItem value="name">按名称</SelectItem>
+              <SelectItem value="price">按价格</SelectItem>
+            </SelectContent>
+          </Select>
+
           <div className="relative hidden md:block w-48">
             <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -187,7 +204,7 @@ function AssetList() {
               <Button variant="destructive" size="sm" onClick={batchDelete} disabled={selected.size === 0}>
                 <Trash2 className="h-4 w-4 mr-1" /> 删除
               </Button>
-              <Button variant="ghost" size="icon" onClick={exitSelectMode}>
+              <Button variant="ghost" size="icon" onClick={exitSelectMode} title="退出批量模式">
                 <X className="h-4 w-4" />
               </Button>
             </>

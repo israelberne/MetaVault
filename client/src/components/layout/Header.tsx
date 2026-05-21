@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { Bell, Search, X, BellOff } from "lucide-react";
+import { Bell, Search, X, BellOff, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   getVapidPublicKey,
   subscribePush,
@@ -75,6 +76,20 @@ function PushToggle() {
   );
 }
 
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      title={theme === "dark" ? "切换浅色模式" : "切换深色模式"}
+    >
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+}
+
 function Header() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -105,6 +120,7 @@ function Header() {
   return (
     <header className="flex h-14 items-center justify-between border-b px-4 gap-2">
       <div className="flex items-center gap-1">
+        <ThemeToggle />
         <PushToggle />
         <div ref={notifRef} className="relative">
           <Button

@@ -71,6 +71,7 @@ export interface AssetFilters {
   status?: AssetStatus;
   category?: string;
   search?: string;
+  sort?: "name" | "price" | "created_at" | "updated_at";
 }
 
 export const categoryLabels: Record<string, string> = {

@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 
 ```
 client/src/
-├── main.tsx                    # 入口（QueryClientProvider + BrowserRouter）
+├── main.tsx                    # 入口（QueryClientProvider + ThemeProvider + BrowserRouter）
 ├── App.tsx                     # 路由定义
 ├── lib/
 │   ├── api-client.ts           # fetch 基础封装
@@ -297,7 +297,7 @@ client/src/
 
 | 路径 | 方法 | 功能 |
 |------|------|------|
-| `/api/assets` | GET/POST | 列表（带筛选）/创建 |
+| `/api/assets` | GET/POST | 列表（带筛选+排序）/创建 |
 | `/api/assets/:id` | GET/PUT/DELETE | 详情/更新/删除 |
 | `/api/suppliers` | GET | 列表（支持 type/favorite 过滤） |
 | `/api/suppliers/:id` | GET/PUT/DELETE | 详情/更新/删除 |

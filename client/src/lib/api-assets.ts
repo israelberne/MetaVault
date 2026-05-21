@@ -7,6 +7,7 @@ export function fetchAssets(filters?: AssetFilters): Promise<Asset[]> {
   if (filters?.status) params.set("status", filters.status);
   if (filters?.category) params.set("category", filters.category);
   if (filters?.search) params.set("search", filters.search);
+  if (filters?.sort) params.set("sort", filters.sort);
 
   const qs = params.toString();
   return apiFetch<Asset[]>(`/assets${qs ? `?${qs}` : ""}`);
