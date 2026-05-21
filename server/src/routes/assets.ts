@@ -4,6 +4,7 @@ import multer from "multer";
 import path from "path";
 import { getDb } from "../db/init.js";
 import { recognizeSubscription } from "../services/ocr-service.js";
+import { validateAssetInput } from "../middleware/validate.js";
 
 const router: RouterType = Router();
 
@@ -82,6 +83,12 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 // POST /api/assets — 创建
 router.post("/", async (req: Request, res: Response) => {
+  const validationError = validateAssetInput(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
   const db = await getDb();
   const id = crypto.randomUUID();
   const { name, type, category, status, tags, purchase_date, purchase_price, currency, supplier_id, notes, ext } = req.body;
@@ -107,6 +114,12 @@ router.post("/", async (req: Request, res: Response) => {
 
 // PUT /api/assets/:id — 更新
 router.put("/:id", async (req: Request, res: Response) => {
+  const validationError = validateAssetInput(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
   const db = await getDb();
   const existing = db.prepare("SELECT id FROM assets WHERE id = ?").get(req.params.id);
   if (!existing) {

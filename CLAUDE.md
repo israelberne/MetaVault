@@ -49,7 +49,7 @@
 - 资产 CRUD（物理/数字/订阅三类，扩展字段 JSON 存储）
 - 资产批量操作（批量修改状态、批量删除）
 - 优秀供应商管理（CRUD + 收藏 + 关联资产展示）
-- 资产关联（depends_on / contains / bound_to / related_to）
+- 资产关联（depends_on / contains / bound_to / related_to，详情页可添加/移除）
 - 提醒系统（8 种类型，启动时 + 每小时自动扫描）
 - Web Push 通知（VAPID，浏览器推送）
 - 统计仪表盘（总览 / 订阅费用 / 健康度 + 图表可视化）
@@ -61,6 +61,7 @@
 - 资产列表排序（名称/价格/创建时间/更新时间）
 - 深色模式（ThemeProvider + 切换按钮 + dark: 颜色适配）
 - 移动端适配（<768px 底部 Tab，>=768px 侧边栏）
+- 前端错误边界（ErrorBoundary 包裹路由，页面崩溃不卸载整个应用）
 - 删除资产关联影响提示
 - 数字资产使用追踪（标记已使用）
 - 采购建议（收藏供应商推荐、续费决策、折旧替换建议）
@@ -76,3 +77,5 @@
 - 提交信息格式：`type(scope): description`，type包括 feat/fix/docs/refactor
 - 币种默认CNY，MVP不存敏感凭证
 - 全部使用参数化查询防SQL注入
+- 服务端输入校验（validate.ts 中间件，字段类型/枚举/范围校验）
+- Import 路径遍历防护（filePath 限制在 uploads/ 目录内）

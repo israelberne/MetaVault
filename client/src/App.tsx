@@ -11,11 +11,13 @@ import SupplierForm from "@/components/supplier/SupplierForm";
 import ImportWizard from "@/components/import/ImportWizard";
 import ExportPage from "@/components/export/ExportPage";
 import NotificationPage from "@/components/notification/NotificationPage";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 function App() {
   return (
     <>
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/assets" element={<AssetList />} />
@@ -31,6 +33,7 @@ function App() {
           <Route path="/notifications" element={<NotificationPage />} />
         </Route>
       </Routes>
+      </ErrorBoundary>
       <Toaster position="top-center" richColors />
     </>
   );

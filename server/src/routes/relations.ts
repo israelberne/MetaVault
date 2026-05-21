@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
+import { validateRelationInput } from "../middleware/validate.js";
 
 const router: RouterType = Router();
 
@@ -20,6 +21,12 @@ router.get("/:assetId", async (req: Request, res: Response) => {
 
 // POST /api/relations — 添加关联
 router.post("/", async (req: Request, res: Response) => {
+  const validationError = validateRelationInput(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
   const db = await getDb();
   const id = crypto.randomUUID();
   const { source_id, target_id, relation } = req.body;

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import type { Router as RouterType } from "express";
 import { getDb } from "../db/init.js";
+import { validateSupplierInput } from "../middleware/validate.js";
 
 const router: RouterType = Router();
 
@@ -47,6 +48,12 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 // POST /api/suppliers — 创建
 router.post("/", async (req: Request, res: Response) => {
+  const validationError = validateSupplierInput(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
   const db = await getDb();
   const id = crypto.randomUUID();
   const { name, type, rating, tags, contact, website, notes, is_favorite } = req.body;
@@ -63,6 +70,12 @@ router.post("/", async (req: Request, res: Response) => {
 
 // PUT /api/suppliers/:id — 更新
 router.put("/:id", async (req: Request, res: Response) => {
+  const validationError = validateSupplierInput(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
   const db = await getDb();
   const existing = db.prepare("SELECT id FROM suppliers WHERE id = ?").get(req.params.id);
   if (!existing) {

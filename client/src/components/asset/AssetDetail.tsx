@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AssetType, AssetStatus, PhysicalExt, DigitalExt, SubscriptionExt } from "@/types/asset";
 import { categoryLabels } from "@/types/asset";
+import RelationManager from "@/components/relation/RelationManager";
 
 const typeLabels: Record<AssetType, string> = { physical: "物理资产", digital: "数字资产", subscription: "订阅" };
 const statusLabels: Record<AssetStatus, string> = { active: "使用中", idle: "闲置", expired: "过期", disposed: "已处置" };
@@ -194,21 +195,11 @@ function AssetDetail() {
       )}
 
       {/* 关联资产 */}
-      {(relations?.length ?? 0) > 0 && (
-        <Card>
-          <CardHeader><CardTitle>关联资产</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {relations!.map((r) => (
-              <div key={r.id} className="flex items-center gap-2">
-                <Badge variant="outline">{relationLabels[r.relation]}</Badge>
-                <span className="cursor-pointer hover:underline" onClick={() => navigate(`/assets/${r.source_id === id ? r.target_id : r.source_id}`)}>
-                  {r.source_id === id ? r.target_name : r.source_name}
-                </span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardContent className="pt-4">
+          <RelationManager assetId={asset.id} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
