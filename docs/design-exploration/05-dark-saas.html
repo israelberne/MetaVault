@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Dark SaaS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0A0A0A;
+    color: #E5E5E5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Grid pattern background */
+  .grid-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* === HEADER === */
+  .header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  .logo span { color: #00FF88; }
+
+  .logo .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #00FF88;
+    border-radius: 50%;
+    margin-left: 2px;
+    vertical-align: middle;
+  }
+
+  .header-nav {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .header-nav a {
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .header-nav a.active { color: #00FF88; }
+  .header-nav a:hover { color: #E5E5E5; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .notif-badge {
+    background: rgba(255,0,0,0.15);
+    color: #FF4444;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,0,0,0.2);
+  }
+
+  .user-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,255,136,0.3);
+    background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,212,255,0.1));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #00FF88;
+  }
+
+  /* === MAIN LAYOUT === */
+  .main {
+    position: relative;
+    z-index: 1;
+    padding: 32px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* Stat row */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: #111111;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.green::before { background: linear-gradient(90deg, #00FF88, transparent); }
+  .stat-card.cyan::before { background: linear-gradient(90deg, #00D4FF, transparent); }
+  .stat-card.red::before { background: linear-gradient(90deg, #FF4444, transparent); }
+  .stat-card.purple::before { background: linear-gradient(90deg, #A855F7, transparent); }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1.5px;
+  }
+
+  .stat-value.glow-green {
+    color: #00FF88;
+    text-shadow: 0 0 20px rgba(0,255,136,0.4), 0 0 40px rgba(0,255,136,0.15);
+  }
+
+  .stat-value.glow-cyan {
+    color: #00D4FF;
+    text-shadow: 0 0 20px rgba(0,212,255,0.4), 0 0 40px rgba(0,212,255,0.15);
+  }
+
+  .stat-value.glow-red {
+    color: #FF4444;
+    text-shadow: 0 0 20px rgba(255,68,68,0.4), 0 0 40px rgba(255,68,68,0.15);
+  }
+
+  .stat-value.glow-purple {
+    color: #A855F7;
+    text-shadow: 0 0 20px rgba(168,85,247,0.4), 0 0 40px rgba(168,85,247,0.15);
+  }
+
+  .stat-change {
+    font-size: 12px;
+    color: #444;
+    margin-top: 8px;
+  }
+
+  .stat-change .up { color: #00FF88; }
+  .stat-change .down { color: #FF4444; }
+
+  /* Grid layout for panels */
+  .panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .panel {
+    background: #111111;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+  }
+
+  /* Gradient border variant */
+  .panel.gradient-border {
+    border: none;
+    padding: 0;
+    background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,212,255,0.2));
+    border-radius: 13px;
+  }
+
+  .panel.gradient-border .panel-inner {
+    background: #111111;
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .panel-title .indicator {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #00FF88;
+    box-shadow: 0 0 8px rgba(0,255,136,0.6);
+  }
+
+  /* Type distribution */
+  .type-list { display: flex; flex-direction: column; gap: 16px; }
+
+  .type-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .type-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .type-icon.phys { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); }
+  .type-icon.digi { background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2); }
+  .type-icon.subs { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); }
+
+  .type-details { flex: 1; }
+
+  .type-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+
+  .type-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .type-bar-fill { height: 100%; border-radius: 2px; }
+
+  .type-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .type-count.green { color: #00FF88; text-shadow: 0 0 10px rgba(0,255,136,0.3); }
+  .type-count.cyan { color: #00D4FF; text-shadow: 0 0 10px rgba(0,212,255,0.3); }
+  .type-count.purple { color: #A855F7; text-shadow: 0 0 10px rgba(168,85,247,0.3); }
+
+  /* Subscription panel */
+  .sub-highlight {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    color: #00FF88;
+    text-shadow: 0 0 30px rgba(0,255,136,0.5), 0 0 60px rgba(0,255,136,0.2);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .sub-monthly {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .sub-meta {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sub-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+
+  .sub-row .label { color: #555; }
+  .sub-row .val { font-family: 'JetBrains Mono', monospace; color: #00D4FF; }
+
+  /* Status panel */
+  .status-display {
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .status-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 64px;
+    font-weight: 700;
+    color: #00D4FF;
+    text-shadow: 0 0 30px rgba(0,212,255,0.4), 0 0 60px rgba(0,212,255,0.15);
+    letter-spacing: -3px;
+    line-height: 1;
+  }
+
+  .status-label {
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 8px;
+  }
+
+  .status-bar-container {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.04);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .status-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #00FF88, #00D4FF);
+    box-shadow: 0 0 12px rgba(0,255,136,0.4);
+  }
+
+  /* Wide chart panel */
+  .panel-wide {
+    grid-column: span 2;
+  }
+
+  .chart-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+    margin-top: 12px;
+    position: relative;
+  }
+
+  .chart-area::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .chart-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+  }
+
+  .chart-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 3px;
+    position: relative;
+  }
+
+  .chart-bar.green { background: rgba(0,255,136,0.6); }
+  .chart-bar.cyan { background: rgba(0,212,255,0.6); }
+  .chart-bar.purple { background: rgba(168,85,247,0.6); }
+  .chart-bar.highlight { background: #00FF88; box-shadow: 0 0 12px rgba(0,255,136,0.4); }
+
+  .chart-bar-label {
+    font-size: 9px;
+    color: #444;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Alert panel */
+  .alert-card {
+    background: rgba(255,68,68,0.05);
+    border: 1px solid rgba(255,68,68,0.15);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .alert-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .alert-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #FF4444;
+    box-shadow: 0 0 12px rgba(255,68,68,0.6);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .alert-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #FF6666;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .alert-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255,68,68,0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255,68,68,0.08);
+  }
+
+  .alert-item-icon {
+    font-size: 14px;
+  }
+
+  .alert-item-text {
+    font-size: 13px;
+    color: #CC8888;
+    flex: 1;
+  }
+
+  .alert-item-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #664444;
+  }
+
+  /* Bottom row */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Health gauge */
+  .health-gauge {
+    text-align: center;
+    padding: 16px 0;
+  }
+
+  .health-ring {
+    width: 120px; height: 120px;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+
+  .health-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+  .health-ring .h-track { fill: none; stroke: rgba(255,255,255,0.04); stroke-width: 8; }
+
+  .health-ring .h-fill {
+    fill: none;
+    stroke: url(#healthGrad);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 71;
+  }
+
+  .health-ring-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .health-ring-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #00FF88;
+    text-shadow: 0 0 16px rgba(0,255,136,0.4);
+  }
+
+  .health-ring-pct {
+    font-size: 10px;
+    color: #555;
+  }
+
+  .health-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 8px;
+  }
+
+  .health-stat { text-align: center; }
+
+  .health-stat .hs-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .health-stat .hs-val.green { color: #00FF88; }
+  .health-stat .hs-val.red { color: #FF4444; }
+
+  .health-stat .hs-lbl {
+    font-size: 10px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+
+  /* Footer */
+  .footer {
+    position: relative;
+    z-index: 1;
+    padding: 16px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #333;
+  }
+
+  .footer span { color: #00FF88; }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- Hidden SVG gradient definition -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="healthGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00FF88"/>
+      <stop offset="100%" style="stop-color:#00D4FF"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">Meta<span>Vault</span><span class="dot"></span></div>
+  <div class="header-nav">
+    <a href="#" class="active">Dashboard</a>
+    <a href="#">Assets</a>
+    <a href="#">Suppliers</a>
+    <a href="#">Alerts</a>
+  </div>
+  <div class="header-right">
+    <div class="notif-badge">3 Unread</div>
+    <div class="user-avatar">L</div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Top Stat Row -->
+  <div class="stat-row">
+    <div class="stat-card green">
+      <div class="stat-label">资产总值</div>
+      <div class="stat-value glow-green">¥5,199</div>
+      <div class="stat-change"><span class="up">+2.4%</span> vs上月</div>
+    </div>
+    <div class="stat-card cyan">
+      <div class="stat-label">资产总数</div>
+      <div class="stat-value glow-cyan">8</div>
+      <div class="stat-change">使用中 8 / 闲置 0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">即将到期</div>
+      <div class="stat-value glow-red">2</div>
+      <div class="stat-change"><span class="down">需关注</span></div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">供应商</div>
+      <div class="stat-value glow-purple">1</div>
+      <div class="stat-change">已收录</div>
+    </div>
+  </div>
+
+  <!-- Middle Panels -->
+  <div class="panel-grid">
+
+    <!-- Type Distribution -->
+    <div class="panel">
+      <div class="panel-title">
+        资产分类
+        <div class="indicator"></div>
+      </div>
+      <div class="type-list">
+        <div class="type-item">
+          <div class="type-icon phys">&#9632;</div>
+          <div class="type-details">
+            <div class="type-name">物理资产</div>
+            <div class="type-bar"><div class="type-bar-fill" style="width:62.5%;background:#00FF88"></div></div>
+          </div>
+          <div class="type-count green">5</div>
+        </div>
+        <div class="type-item">
+          <div class="type-icon digi">&#9670;</div>
+          <div class="type-details">
+            <div class="type-name">数字资产</div>
+            <div class="type-bar"><div class="type-bar-fill" style="width:12.5%;background:#00D4FF"></div></div>
+          </div>
+          <div class="type-count cyan">1</div>
+        </div>
+        <div class="type-item">
+          <div class="type-icon subs">&#9733;</div>
+          <div class="type-details">
+            <div class="type-name">订阅</div>
+            <div class="type-bar"><div class="type-bar-fill" style="width:25%;background:#A855F7"></div></div>
+          </div>
+          <div class="type-count purple">2</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscription (gradient border) -->
+    <div class="panel gradient-border">
+      <div class="panel-inner">
+        <div class="panel-title">
+          订阅月费
+          <div class="indicator"></div>
+        </div>
+        <div class="sub-highlight">¥298</div>
+        <div class="sub-monthly">月度订阅费用</div>
+        <div class="sub-meta">
+          <div class="sub-row">
+            <span class="label">年化预估</span>
+            <span class="val">¥3,576</span>
+          </div>
+          <div class="sub-row">
+            <span class="label">订阅数</span>
+            <span class="val">2</span>
+          </div>
+          <div class="sub-row">
+            <span class="label">占总值</span>
+            <span class="val">5.7%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Status -->
+    <div class="panel">
+      <div class="panel-title">
+        使用状态
+        <div class="indicator"></div>
+      </div>
+      <div class="status-display">
+        <div class="status-number">8</div>
+        <div class="status-label">使用中 Active</div>
+        <div class="status-bar-container">
+          <div class="status-bar-fill" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Chart + Alerts Row -->
+  <div class="panel-grid">
+
+    <!-- Value Chart (wide) -->
+    <div class="panel panel-wide">
+      <div class="panel-title">
+        资产价值分布
+        <div class="indicator"></div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-col">
+          <div class="chart-bar green" style="height:75%"></div>
+          <div class="chart-bar-label">物理</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-bar cyan" style="height:15%"></div>
+          <div class="chart-bar-label">数字</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-bar purple" style="height:30%"></div>
+          <div class="chart-bar-label">订阅</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-bar highlight" style="height:100%"></div>
+          <div class="chart-bar-label">使用中</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-bar green" style="height:40%"></div>
+          <div class="chart-bar-label">到期</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-bar cyan" style="height:55%"></div>
+          <div class="chart-bar-label">提醒</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-bar purple" style="height:45%"></div>
+          <div class="chart-bar-label">供应商</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="alert-card">
+      <div class="alert-header">
+        <div class="alert-dot"></div>
+        <div class="alert-title">3 未读提醒</div>
+      </div>
+      <div class="alert-list">
+        <div class="alert-item">
+          <span class="alert-item-icon">&#9888;</span>
+          <span class="alert-item-text">订阅即将到期</span>
+          <span class="alert-item-time">2h ago</span>
+        </div>
+        <div class="alert-item">
+          <span class="alert-item-icon">&#9888;</span>
+          <span class="alert-item-text">续费提醒</span>
+          <span class="alert-item-time">5h ago</span>
+        </div>
+        <div class="alert-item">
+          <span class="alert-item-icon">&#9888;</span>
+          <span class="alert-item-text">保修到期</span>
+          <span class="alert-item-time">1d ago</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="bottom-row">
+    <!-- Health Score -->
+    <div class="panel">
+      <div class="panel-title">
+        健康度
+        <div class="indicator"></div>
+      </div>
+      <div class="health-gauge">
+        <div class="health-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="h-track" cx="50" cy="50" r="45"/>
+            <circle class="h-fill" cx="50" cy="50" r="45"/>
+          </svg>
+          <div class="health-ring-text">
+            <div class="health-ring-num">75</div>
+            <div class="health-ring-pct">%</div>
+          </div>
+        </div>
+        <div class="health-stats">
+          <div class="health-stat">
+            <div class="hs-val green">8</div>
+            <div class="hs-lbl">正常</div>
+          </div>
+          <div class="health-stat">
+            <div class="hs-val red">2</div>
+            <div class="hs-lbl">风险</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscription Detail -->
+    <div class="panel">
+      <div class="panel-title">
+        订阅明细
+        <div class="indicator"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:rgba(168,85,247,0.06);border-radius:8px;border:1px solid rgba(168,85,247,0.12)">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#A855F7">云存储</div>
+            <div style="font-size:11px;color:#555;margin-top:2px">月付 / 自动续费</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#A855F7;text-shadow:0 0 10px rgba(168,85,247,0.3)">¥198</div>
+            <div style="font-size:10px;color:#FF6666;margin-top:2px">即将到期</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:rgba(168,85,247,0.06);border-radius:8px;border:1px solid rgba(168,85,247,0.12)">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#A855F7">音乐会员</div>
+            <div style="font-size:11px;color:#555;margin-top:2px">月付 / 自动续费</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#A855F7;text-shadow:0 0 10px rgba(168,85,247,0.3)">¥100</div>
+            <div style="font-size:10px;color:#FF6666;margin-top:2px">即将到期</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div>MetaVault <span>v0.5</span></div>
+  <div>Powered by <span>dark mode</span></div>
+</div>
+
+</body>
+</html>

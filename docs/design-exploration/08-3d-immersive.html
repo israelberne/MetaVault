@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — 3D Immersive Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-deep: #050510;
+    --bg-panel: rgba(10, 15, 40, 0.85);
+    --border-glow: rgba(0, 200, 255, 0.15);
+    --cyan: #00c8ff;
+    --cyan-dim: rgba(0, 200, 255, 0.6);
+    --magenta: #ff00aa;
+    --orange: #ff8800;
+    --green: #00ff88;
+    --text-bright: rgba(255, 255, 255, 0.95);
+    --text-dim: rgba(180, 200, 220, 0.5);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: var(--bg-deep);
+    color: var(--text-bright);
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+  }
+
+  /* Particle background */
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--cyan);
+    border-radius: 50%;
+    opacity: 0;
+    animation: particleDrift 8s linear infinite;
+  }
+  .particle:nth-child(1)  { left: 10%; top: 20%; animation-delay: 0s; animation-duration: 6s; }
+  .particle:nth-child(2)  { left: 25%; top: 60%; animation-delay: 1s; animation-duration: 8s; }
+  .particle:nth-child(3)  { left: 40%; top: 30%; animation-delay: 2s; animation-duration: 7s; }
+  .particle:nth-child(4)  { left: 55%; top: 70%; animation-delay: 0.5s; animation-duration: 9s; }
+  .particle:nth-child(5)  { left: 70%; top: 15%; animation-delay: 3s; animation-duration: 6s; }
+  .particle:nth-child(6)  { left: 85%; top: 50%; animation-delay: 1.5s; animation-duration: 7s; }
+  .particle:nth-child(7)  { left: 15%; top: 80%; animation-delay: 4s; animation-duration: 8s; }
+  .particle:nth-child(8)  { left: 60%; top: 45%; animation-delay: 2.5s; animation-duration: 6s; }
+  .particle:nth-child(9)  { left: 90%; top: 25%; animation-delay: 3.5s; animation-duration: 9s; }
+  .particle:nth-child(10) { left: 35%; top: 90%; animation-delay: 0.8s; animation-duration: 7s; }
+  .particle:nth-child(11) { left: 5%;  top: 45%; animation-delay: 4.5s; animation-duration: 8s; }
+  .particle:nth-child(12) { left: 75%; top: 85%; animation-delay: 1.2s; animation-duration: 6s; }
+  .particle:nth-child(13) { left: 50%; top: 10%; animation-delay: 5s; animation-duration: 9s; }
+  .particle:nth-child(14) { left: 20%; top: 55%; animation-delay: 2.8s; animation-duration: 7s; }
+  .particle:nth-child(15) { left: 80%; top: 35%; animation-delay: 3.8s; animation-duration: 8s; }
+
+  @keyframes particleDrift {
+    0%   { opacity: 0; transform: translateY(0) scale(1); }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translateY(-120px) scale(0.3); }
+  }
+
+  /* Grid lines background */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Dashboard */
+  .dashboard {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 1100px;
+    padding: 32px;
+    transform-style: preserve-3d;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    transform: translateZ(30px);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo-hex {
+    width: 48px; height: 48px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-hex svg { position: absolute; inset: 0; }
+  .logo-hex-text { position: relative; z-index: 1; font-size: 16px; }
+  .logo-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-status {
+    display: flex; gap: 16px; align-items: center;
+  }
+  .hud-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border: 1px solid var(--border-glow);
+    border-radius: 4px;
+    background: var(--bg-panel);
+    color: var(--cyan-dim);
+    text-transform: uppercase;
+  }
+  .hud-badge.alert {
+    border-color: rgba(255,0,170,0.3);
+    color: var(--magenta);
+    animation: alertPulse 2s ease-in-out infinite;
+  }
+  @keyframes alertPulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(255,0,170,0.2); }
+    50% { box-shadow: 0 0 12px rgba(255,0,170,0.4); }
+  }
+
+  /* 3D Panel base */
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,200,255,0.05), inset 0 1px 0 rgba(0,200,255,0.08);
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+    opacity: 0.5;
+  }
+  .panel:hover {
+    box-shadow: 0 0 30px rgba(0,200,255,0.1), inset 0 1px 0 rgba(0,200,255,0.12);
+  }
+
+  /* KPI Row */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .kpi-panel {
+    padding: 22px 20px;
+    transform: perspective(800px) rotateX(2deg) translateZ(20px);
+  }
+  .kpi-panel:hover {
+    transform: perspective(800px) rotateX(0deg) translateZ(40px);
+  }
+  .kpi-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .kpi-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .kpi-value.glow-cyan {
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0,200,255,0.5), 0 0 40px rgba(0,200,255,0.2);
+  }
+  .kpi-value.glow-magenta {
+    color: var(--magenta);
+    text-shadow: 0 0 20px rgba(255,0,170,0.5), 0 0 40px rgba(255,0,170,0.2);
+  }
+  .kpi-value.glow-green {
+    color: var(--green);
+    text-shadow: 0 0 20px rgba(0,255,136,0.5), 0 0 40px rgba(0,255,136,0.2);
+  }
+  .kpi-value.glow-orange {
+    color: var(--orange);
+    text-shadow: 0 0 20px rgba(255,136,0,0.5), 0 0 40px rgba(255,136,0,0.2);
+  }
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+  .kpi-corner {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-color: var(--cyan-dim);
+    border-style: solid;
+    border-width: 0;
+  }
+  .kpi-corner.tl { top: 4px; left: 4px; border-top-width: 1px; border-left-width: 1px; }
+  .kpi-corner.tr { top: 4px; right: 4px; border-top-width: 1px; border-right-width: 1px; }
+  .kpi-corner.bl { bottom: 4px; left: 4px; border-bottom-width: 1px; border-left-width: 1px; }
+  .kpi-corner.br { bottom: 4px; right: 4px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* Middle row */
+  .mid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .section-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before {
+    content: '';
+    width: 12px; height: 1px;
+    background: var(--cyan);
+  }
+
+  /* Asset breakdown */
+  .breakdown-panel {
+    padding: 24px;
+    transform: perspective(800px) rotateY(-2deg) translateZ(15px);
+  }
+  .breakdown-panel:hover {
+    transform: perspective(800px) rotateY(0deg) translateZ(35px);
+  }
+  .breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,200,255,0.06);
+  }
+  .breakdown-item:last-child { border-bottom: none; }
+  .breakdown-icon {
+    width: 36px; height: 36px;
+    border: 1px solid;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .breakdown-icon.phy { border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
+  .breakdown-icon.dig { border-color: rgba(0,200,255,0.4); background: rgba(0,200,255,0.08); }
+  .breakdown-icon.sub { border-color: rgba(255,136,0,0.4); background: rgba(255,136,0,0.08); }
+  .breakdown-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .breakdown-bar-wrap {
+    width: 80px; height: 3px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .breakdown-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .breakdown-bar-fill.phy { width: 62.5%; background: #a855f7; box-shadow: 0 0 6px rgba(168,85,247,0.4); }
+  .breakdown-bar-fill.dig { width: 12.5%; background: var(--cyan); box-shadow: 0 0 6px rgba(0,200,255,0.4); }
+  .breakdown-bar-fill.sub { width: 25%; background: var(--orange); box-shadow: 0 0 6px rgba(255,136,0,0.4); }
+  .breakdown-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: right;
+  }
+  .breakdown-num.phy-c { color: #c084fc; text-shadow: 0 0 8px rgba(168,85,247,0.4); }
+  .breakdown-num.dig-c { color: var(--cyan); text-shadow: 0 0 8px rgba(0,200,255,0.4); }
+  .breakdown-num.sub-c { color: var(--orange); text-shadow: 0 0 8px rgba(255,136,0,0.4); }
+
+  /* Donut panel */
+  .donut-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: perspective(800px) rotateY(2deg) translateZ(15px);
+  }
+  .donut-panel:hover {
+    transform: perspective(800px) rotateY(0deg) translateZ(35px);
+  }
+  .donut-wrap {
+    position: relative;
+    width: 170px; height: 170px;
+    margin-bottom: 14px;
+  }
+  .donut-svg { width: 170px; height: 170px; transform: rotate(-90deg); }
+  .donut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .donut-center-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--cyan);
+    text-shadow: 0 0 16px rgba(0,200,255,0.5);
+  }
+  .donut-center-lbl {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .donut-legend {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  /* Bottom row */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 16px;
+  }
+
+  /* Subscription panel */
+  .sub-panel {
+    padding: 24px;
+    transform: perspective(800px) rotateX(-1deg) translateZ(10px);
+  }
+  .sub-panel:hover {
+    transform: perspective(800px) rotateX(0deg) translateZ(30px);
+  }
+  .sub-main {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .sub-currency {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    color: var(--text-dim);
+  }
+  .sub-amount {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--orange);
+    text-shadow: 0 0 24px rgba(255,136,0,0.5), 0 0 48px rgba(255,136,0,0.2);
+    letter-spacing: 2px;
+  }
+  .sub-period {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .sub-stats {
+    display: flex; gap: 28px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0,200,255,0.08);
+  }
+  .sub-stat-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .sub-stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* Alert panel */
+  .alert-panel {
+    padding: 24px;
+    transform: perspective(800px) rotateX(-1deg) rotateY(1deg) translateZ(10px);
+  }
+  .alert-panel:hover {
+    transform: perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(30px);
+  }
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: rgba(0,200,255,0.03);
+    border: 1px solid rgba(0,200,255,0.06);
+    border-radius: 4px;
+    border-left: 2px solid;
+  }
+  .alert-item:last-child { margin-bottom: 0; }
+  .alert-item.critical { border-left-color: var(--magenta); }
+  .alert-item.warning { border-left-color: var(--orange); }
+  .alert-item.info { border-left-color: var(--cyan); }
+  .alert-icon {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .alert-icon.critical { background: rgba(255,0,170,0.15); color: var(--magenta); }
+  .alert-icon.warning { background: rgba(255,136,0,0.15); color: var(--orange); }
+  .alert-icon.info { background: rgba(0,200,255,0.15); color: var(--cyan); }
+  .alert-text { font-size: 12px; color: rgba(255,255,255,0.7); flex: 1; }
+  .alert-time {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  /* Scan line effect */
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+    opacity: 0.3;
+    z-index: 100;
+    animation: scanMove 6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scanMove {
+    0%   { top: -2px; }
+    100% { top: 100vh; }
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .status-item {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glow);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+    transform-style: preserve-3d;
+    transform: translateZ(5px);
+  }
+  .status-item strong {
+    font-family: 'Orbitron', monospace;
+    font-weight: 600;
+    color: var(--cyan);
+    text-shadow: 0 0 6px rgba(0,200,255,0.3);
+  }
+
+  @media (max-width: 768px) {
+    .dashboard { padding: 16px; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .mid-row, .bottom-row { grid-template-columns: 1fr; }
+    .kpi-value { font-size: 22px; }
+    .sub-amount { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="particles">
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+<div class="scanline"></div>
+
+<div class="dashboard">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-hex">
+        <svg viewBox="0 0 48 48" fill="none">
+          <polygon points="24,2 44,14 44,34 24,46 4,34 4,14" stroke="rgba(0,200,255,0.4)" stroke-width="1" fill="rgba(0,200,255,0.05)"/>
+          <polygon points="24,8 38,16 38,32 24,40 10,32 10,16" stroke="rgba(0,200,255,0.2)" stroke-width="0.5" fill="none"/>
+        </svg>
+        <span class="logo-hex-text">💎</span>
+      </div>
+      <div class="logo-title">MetaVault</div>
+    </div>
+    <div class="header-status">
+      <div class="hud-badge">SYS ONLINE</div>
+      <div class="hud-badge alert">3 ALERTS</div>
+    </div>
+  </header>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="panel kpi-panel">
+      <div class="kpi-corner tl"></div><div class="kpi-corner tr"></div>
+      <div class="kpi-corner bl"></div><div class="kpi-corner br"></div>
+      <div class="kpi-label">资产总数</div>
+      <div class="kpi-value glow-cyan">08</div>
+      <div class="kpi-sub">使用中 8 · 利用率 100%</div>
+    </div>
+    <div class="panel kpi-panel">
+      <div class="kpi-corner tl"></div><div class="kpi-corner tr"></div>
+      <div class="kpi-corner bl"></div><div class="kpi-corner br"></div>
+      <div class="kpi-label">供应商</div>
+      <div class="kpi-value glow-magenta">01</div>
+      <div class="kpi-sub">已收藏</div>
+    </div>
+    <div class="panel kpi-panel">
+      <div class="kpi-corner tl"></div><div class="kpi-corner tr"></div>
+      <div class="kpi-corner bl"></div><div class="kpi-corner br"></div>
+      <div class="kpi-label">资产总值</div>
+      <div class="kpi-value glow-green">¥5,199</div>
+      <div class="kpi-sub">全部资产估值</div>
+    </div>
+    <div class="panel kpi-panel">
+      <div class="kpi-corner tl"></div><div class="kpi-corner tr"></div>
+      <div class="kpi-corner bl"></div><div class="kpi-corner br"></div>
+      <div class="kpi-label">即将到期</div>
+      <div class="kpi-value glow-orange">02</div>
+      <div class="kpi-sub">需立即处理</div>
+    </div>
+  </div>
+
+  <!-- Middle Row -->
+  <div class="mid-row">
+    <!-- Breakdown -->
+    <div class="panel breakdown-panel">
+      <div class="section-label">资产构成</div>
+      <div class="breakdown-item">
+        <div class="breakdown-icon phy">📦</div>
+        <div class="breakdown-name">物理资产</div>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar-fill phy"></div></div>
+        <div class="breakdown-num phy-c">5</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-icon dig">💻</div>
+        <div class="breakdown-name">数字资产</div>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar-fill dig"></div></div>
+        <div class="breakdown-num dig-c">1</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-icon sub">🔄</div>
+        <div class="breakdown-name">订阅服务</div>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar-fill sub"></div></div>
+        <div class="breakdown-num sub-c">2</div>
+      </div>
+    </div>
+
+    <!-- Donut -->
+    <div class="panel donut-panel">
+      <div class="section-label">资产分布</div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 170 170">
+          <!-- circumference=2*pi*65=408.4; Physical 62.5%=255.3, Digital 12.5%=51, Sub 25%=102.1 -->
+          <circle cx="85" cy="85" r="65" fill="none" stroke="rgba(168,85,247,0.7)" stroke-width="16"
+            stroke-dasharray="255 408" stroke-dashoffset="0" stroke-linecap="butt"/>
+          <circle cx="85" cy="85" r="65" fill="none" stroke="rgba(0,200,255,0.7)" stroke-width="16"
+            stroke-dasharray="51 408" stroke-dashoffset="-255" stroke-linecap="butt"/>
+          <circle cx="85" cy="85" r="65" fill="none" stroke="rgba(255,136,0,0.7)" stroke-width="16"
+            stroke-dasharray="102 408" stroke-dashoffset="-306" stroke-linecap="butt"/>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-center-val">08</div>
+          <div class="donut-center-lbl">TOTAL</div>
+        </div>
+      </div>
+      <div class="donut-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#a855f7;box-shadow:0 0 4px rgba(168,85,247,0.5)"></div>物理 62.5%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00c8ff;box-shadow:0 0 4px rgba(0,200,255,0.5)"></div>数字 12.5%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff8800;box-shadow:0 0 4px rgba(255,136,0,0.5)"></div>订阅 25%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="bottom-row">
+    <!-- Subscription -->
+    <div class="panel sub-panel">
+      <div class="section-label">订阅费用</div>
+      <div class="sub-main">
+        <span class="sub-currency">¥</span>
+        <span class="sub-amount">298</span>
+        <span class="sub-period">/月</span>
+      </div>
+      <div class="sub-stats">
+        <div>
+          <div class="sub-stat-label">年化</div>
+          <div class="sub-stat-value" style="color:var(--orange)">¥3,576</div>
+        </div>
+        <div>
+          <div class="sub-stat-label">订阅数</div>
+          <div class="sub-stat-value" style="color:var(--cyan)">02</div>
+        </div>
+        <div>
+          <div class="sub-stat-label">到期</div>
+          <div class="sub-stat-value" style="color:var(--magenta)">02</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="panel alert-panel">
+      <div class="section-label">系统提醒</div>
+      <div class="alert-item critical">
+        <span class="alert-icon critical">CRT</span>
+        <span class="alert-text">Adobe CC 即将到期</span>
+        <span class="alert-time">3D</span>
+      </div>
+      <div class="alert-item warning">
+        <span class="alert-icon warning">WRN</span>
+        <span class="alert-text">iCloud+ 续费提醒</span>
+        <span class="alert-time">7D</span>
+      </div>
+      <div class="alert-item info">
+        <span class="alert-icon info">INF</span>
+        <span class="alert-text">新供应商评价待完成</span>
+        <span class="alert-time">NOW</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item">使用率 <strong>100%</strong></div>
+    <div class="status-item">健康度 <strong>OK</strong></div>
+    <div class="status-item">未读 <strong>03</strong></div>
+    <div class="status-item">月费 <strong>¥298</strong></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F8F9FA;
+    color: #1A1A2E;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* === TOP BAR === */
+  .topbar {
+    background: white;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 12px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-logo { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+  .topbar-logo span { color: #3B82F6; }
+  .topbar-divider { width: 1px; height: 20px; background: #E5E7EB; }
+  .topbar-page { font-size: 13px; font-weight: 600; color: #6B7280; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-badge {
+    background: #FEF2F2; color: #EF4444;
+    font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid #FECACA;
+  }
+
+  /* === COLOR PALETTE BAR === */
+  .palette-bar {
+    background: white; border-bottom: 1px solid #E5E7EB;
+    padding: 10px 32px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .palette-label {
+    font-size: 10px; font-weight: 600; color: #9CA3AF;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-right: 8px;
+  }
+
+  .palette-swatch {
+    width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .palette-hex {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #9CA3AF; margin-left: 4px;
+  }
+
+  /* === MAIN CONTENT === */
+  .main { padding: 32px; max-width: 1280px; margin: 0 auto; }
+
+  .section-title {
+    font-size: 11px; font-weight: 700; color: #3B82F6;
+    text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-title::before {
+    content: ''; width: 3px; height: 14px; background: #3B82F6; border-radius: 2px;
+  }
+
+  /* === COMPONENT WRAPPER === */
+  .component-wrap {
+    position: relative; border: 1px dashed #D1D5DB; border-radius: 8px;
+    padding: 20px; margin-bottom: 24px; background: white;
+  }
+
+  .component-label {
+    position: absolute; top: -10px; left: 12px;
+    background: white; padding: 0 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    font-weight: 600; color: #3B82F6; letter-spacing: 0.02em;
+  }
+
+  .component-label .type { color: #9CA3AF; font-weight: 400; margin-left: 4px; }
+
+  /* Spacing annotation */
+  .spacing-note {
+    position: absolute; font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: #3B82F6; background: #EFF6FF;
+    padding: 2px 6px; border-radius: 4px; border: 1px solid #BFDBFE;
+  }
+
+  /* === STAT CARDS === */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  .stat-card {
+    background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; position: relative;
+  }
+
+  .stat-card .accent-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 8px 8px 0 0;
+  }
+  .stat-card .accent-bar.blue { background: #3B82F6; }
+  .stat-card .accent-bar.green { background: #10B981; }
+  .stat-card .accent-bar.red { background: #EF4444; }
+  .stat-card .accent-bar.purple { background: #8B5CF6; }
+
+  .stat-card .s-label {
+    font-size: 11px; font-weight: 600; color: #9CA3AF;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+  }
+
+  .stat-card .s-value { font-size: 32px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .stat-card .s-value.blue { color: #3B82F6; }
+  .stat-card .s-value.green { color: #10B981; }
+  .stat-card .s-value.red { color: #EF4444; }
+  .stat-card .s-value.purple { color: #8B5CF6; }
+  .stat-card .s-sub { font-size: 12px; color: #D1D5DB; margin-top: 6px; }
+
+  /* === TWO / THREE COLUMN LAYOUTS === */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+
+  /* === TYPE DISTRIBUTION === */
+  .type-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .type-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: #F9FAFB; border-radius: 8px; border: 1px solid #F3F4F6;
+  }
+
+  .type-icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .type-icon.blue { background: #EFF6FF; border: 1px solid #BFDBFE; color: #3B82F6; }
+  .type-icon.cyan { background: #ECFEFF; border: 1px solid #A5F3FC; color: #06B6D4; }
+  .type-icon.purple { background: #F5F3FF; border: 1px solid #DDD6FE; color: #8B5CF6; }
+
+  .type-info { flex: 1; }
+  .type-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+
+  .type-bar { height: 4px; background: #F3F4F6; border-radius: 2px; overflow: hidden; }
+  .type-bar-fill { height: 100%; border-radius: 2px; }
+
+  .type-count { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; }
+  .type-count.blue { color: #3B82F6; }
+  .type-count.cyan { color: #06B6D4; }
+  .type-count.purple { color: #8B5CF6; }
+
+  .type-pct { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #D1D5DB; }
+
+  /* === SUBSCRIPTION CARD === */
+  .sub-card {
+    background: #F9FAFB; border: 1px solid #F3F4F6; border-radius: 8px; padding: 20px;
+  }
+
+  .sub-amount {
+    font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 700;
+    color: #3B82F6; letter-spacing: -1.5px; line-height: 1;
+  }
+
+  .sub-label {
+    font-size: 11px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px;
+  }
+
+  .sub-meta {
+    margin-top: 16px; padding-top: 12px; border-top: 1px solid #E5E7EB;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  .sub-row { display: flex; justify-content: space-between; font-size: 12px; }
+  .sub-row .label { color: #9CA3AF; }
+  .sub-row .val { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #3B82F6; }
+
+  /* === STATUS RING === */
+  .status-ring-wrap { text-align: center; padding: 8px 0; }
+
+  .status-ring { width: 100px; height: 100px; margin: 0 auto; position: relative; }
+  .status-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .status-ring .sr-track { fill: none; stroke: #F3F4F6; stroke-width: 8; }
+  .status-ring .sr-fill { fill: none; stroke: #3B82F6; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 251; stroke-dashoffset: 0; }
+
+  .sr-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;
+  }
+
+  .sr-num { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: #3B82F6; }
+  .sr-lbl { font-size: 9px; color: #9CA3AF; text-transform: uppercase; }
+
+  /* === BAR CHART === */
+  .chart-area { display: flex; align-items: flex-end; gap: 12px; height: 100px; margin-top: 8px; }
+
+  .chart-col {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-end; height: 100%;
+  }
+
+  .chart-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 3px; }
+  .chart-bar.blue { background: #3B82F6; }
+  .chart-bar.blue-light { background: #93C5FD; }
+  .chart-bar.purple { background: #8B5CF6; }
+  .chart-bar.red { background: #EF4444; }
+
+  .chart-label { font-size: 9px; color: #9CA3AF; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .chart-val { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: #6B7280; margin-bottom: 4px; }
+
+  /* === ALERT LIST === */
+  .alert-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .alert-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: #FEF2F2; border-radius: 6px; border: 1px solid #FECACA;
+  }
+
+  .alert-dot { width: 6px; height: 6px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
+  .alert-text { font-size: 12px; color: #991B1B; font-weight: 500; }
+  .alert-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #F87171; margin-left: auto; }
+
+  /* === HEALTH SCORE === */
+  .health-display { text-align: center; padding: 8px 0; }
+
+  .health-score {
+    font-family: 'JetBrains Mono', monospace; font-size: 48px; font-weight: 700;
+    color: #3B82F6; letter-spacing: -2px; line-height: 1;
+  }
+
+  .health-score .pct { font-size: 20px; color: #9CA3AF; }
+
+  .health-bar { display: flex; gap: 3px; margin-top: 12px; justify-content: center; }
+  .health-seg { height: 4px; border-radius: 2px; }
+
+  .health-detail {
+    display: flex; justify-content: center; gap: 24px; margin-top: 12px;
+    font-size: 11px; color: #9CA3AF;
+  }
+  .health-detail .hd-val { font-weight: 700; color: #1A1A2E; }
+  .health-detail .hd-val.red { color: #EF4444; }
+
+  /* === SPACING SCALE === */
+  .spacing-demo { display: flex; align-items: center; gap: 16px; padding: 12px 0; }
+  .spacing-block { display: flex; align-items: center; gap: 4px; }
+  .spacing-box { background: #EFF6FF; border: 1px dashed #93C5FD; border-radius: 2px; }
+  .spacing-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #3B82F6; }
+
+  /* === TOKEN TABLE === */
+  .token-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+  .token-table th {
+    text-align: left; padding: 8px 12px; background: #F9FAFB;
+    font-weight: 600; color: #6B7280; text-transform: uppercase;
+    letter-spacing: 0.08em; font-size: 10px; border-bottom: 1px solid #E5E7EB;
+  }
+
+  .token-table td { padding: 8px 12px; border-bottom: 1px solid #F3F4F6; color: #374151; }
+
+  .token-name { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #3B82F6; }
+  .token-value { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B7280; }
+
+  .token-swatch {
+    width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08);
+    display: inline-block; vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">Meta<span>Vault</span></div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-page">Design System / Dashboard</div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-badge">3 Unread</div>
+  </div>
+</div>
+
+<!-- Color Palette Bar -->
+<div class="palette-bar">
+  <span class="palette-label">Palette</span>
+  <div class="palette-swatch" style="background:#3B82F6"></div>
+  <span class="palette-hex">#3B82F6</span>
+  <div class="palette-swatch" style="background:#10B981"></div>
+  <span class="palette-hex">#10B981</span>
+  <div class="palette-swatch" style="background:#EF4444"></div>
+  <span class="palette-hex">#EF4444</span>
+  <div class="palette-swatch" style="background:#8B5CF6"></div>
+  <span class="palette-hex">#8B5CF6</span>
+  <div class="palette-swatch" style="background:#06B6D4"></div>
+  <span class="palette-hex">#06B6D4</span>
+  <div class="palette-swatch" style="background:#F59E0B"></div>
+  <span class="palette-hex">#F59E0B</span>
+  <div class="palette-swatch" style="background:#1A1A2E"></div>
+  <span class="palette-hex">#1A1A2E</span>
+  <div class="palette-swatch" style="background:#F8F9FA"></div>
+  <span class="palette-hex">#F8F9FA</span>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Section: Stat Cards -->
+  <div class="section-title">StatCard Components</div>
+  <div class="component-wrap">
+    <div class="component-label">StatCard<span class="type">: React.FC</span></div>
+    <div class="spacing-note" style="top:4px;right:12px">padding: 20px</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="accent-bar blue"></div>
+        <div class="s-label">资产总值</div>
+        <div class="s-value blue">¥5,199</div>
+        <div class="s-sub">CNY</div>
+      </div>
+      <div class="stat-card">
+        <div class="accent-bar green"></div>
+        <div class="s-label">资产总数</div>
+        <div class="s-value green">8</div>
+        <div class="s-sub">使用中</div>
+      </div>
+      <div class="stat-card">
+        <div class="accent-bar red"></div>
+        <div class="s-label">即将到期</div>
+        <div class="s-value red">2</div>
+        <div class="s-sub">需关注</div>
+      </div>
+      <div class="stat-card">
+        <div class="accent-bar purple"></div>
+        <div class="s-label">供应商</div>
+        <div class="s-value purple">1</div>
+        <div class="s-sub">已收录</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Data Components -->
+  <div class="section-title">Data Components</div>
+  <div class="two-col">
+    <!-- Type Distribution -->
+    <div class="component-wrap">
+      <div class="component-label">TypeList<span class="type">: React.FC</span></div>
+      <div class="spacing-note" style="top:4px;right:12px">gap: 14px</div>
+      <div class="type-list">
+        <div class="type-item">
+          <div class="type-icon blue">&#9632;</div>
+          <div class="type-info">
+            <div class="type-name">物理资产</div>
+            <div class="type-bar"><div class="type-bar-fill" style="width:62.5%;background:#3B82F6"></div></div>
+          </div>
+          <div>
+            <div class="type-count blue">5</div>
+            <div class="type-pct">62.5%</div>
+          </div>
+        </div>
+        <div class="type-item">
+          <div class="type-icon cyan">&#9670;</div>
+          <div class="type-info">
+            <div class="type-name">数字资产</div>
+            <div class="type-bar"><div class="type-bar-fill" style="width:12.5%;background:#06B6D4"></div></div>
+          </div>
+          <div>
+            <div class="type-count cyan">1</div>
+            <div class="type-pct">12.5%</div>
+          </div>
+        </div>
+        <div class="type-item">
+          <div class="type-icon purple">&#9733;</div>
+          <div class="type-info">
+            <div class="type-name">订阅</div>
+            <div class="type-bar"><div class="type-bar-fill" style="width:25%;background:#8B5CF6"></div></div>
+          </div>
+          <div>
+            <div class="type-count purple">2</div>
+            <div class="type-pct">25.0%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscription -->
+    <div class="component-wrap">
+      <div class="component-label">SubscriptionCard<span class="type">: React.FC</span></div>
+      <div class="spacing-note" style="top:4px;right:12px">padding: 20px</div>
+      <div class="sub-card">
+        <div class="sub-amount">¥298</div>
+        <div class="sub-label">月度订阅费</div>
+        <div class="sub-meta">
+          <div class="sub-row"><span class="label">年化预估</span><span class="val">¥3,576</span></div>
+          <div class="sub-row"><span class="label">订阅数</span><span class="val">2</span></div>
+          <div class="sub-row"><span class="label">占总值</span><span class="val">5.7%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Visualization Components -->
+  <div class="section-title">Visualization Components</div>
+  <div class="three-col">
+    <!-- Bar Chart -->
+    <div class="component-wrap">
+      <div class="component-label">BarChart<span class="type">: React.FC</span></div>
+      <div class="chart-area">
+        <div class="chart-col">
+          <div class="chart-val">5</div>
+          <div class="chart-bar blue" style="height:75%"></div>
+          <div class="chart-label">物理</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-val">1</div>
+          <div class="chart-bar blue-light" style="height:15%"></div>
+          <div class="chart-label">数字</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-val">2</div>
+          <div class="chart-bar purple" style="height:30%"></div>
+          <div class="chart-label">订阅</div>
+        </div>
+        <div class="chart-col">
+          <div class="chart-val">2</div>
+          <div class="chart-bar red" style="height:30%"></div>
+          <div class="chart-label">到期</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Ring -->
+    <div class="component-wrap">
+      <div class="component-label">StatusRing<span class="type">: React.FC</span></div>
+      <div class="status-ring-wrap">
+        <div class="status-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="sr-track" cx="50" cy="50" r="40"/>
+            <circle class="sr-fill" cx="50" cy="50" r="40"/>
+          </svg>
+          <div class="sr-center">
+            <div class="sr-num">8</div>
+            <div class="sr-lbl">使用中</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert List -->
+    <div class="component-wrap">
+      <div class="component-label">AlertList<span class="type">: React.FC</span></div>
+      <div class="alert-list">
+        <div class="alert-item">
+          <div class="alert-dot"></div>
+          <span class="alert-text">订阅即将到期</span>
+          <span class="alert-time">2h</span>
+        </div>
+        <div class="alert-item">
+          <div class="alert-dot"></div>
+          <span class="alert-text">续费提醒</span>
+          <span class="alert-time">5h</span>
+        </div>
+        <div class="alert-item">
+          <div class="alert-dot"></div>
+          <span class="alert-text">保修到期</span>
+          <span class="alert-time">1d</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Score Components -->
+  <div class="section-title">Score Components</div>
+  <div class="two-col">
+    <!-- Health Score -->
+    <div class="component-wrap">
+      <div class="component-label">HealthScore<span class="type">: React.FC</span></div>
+      <div class="health-display">
+        <div class="health-score">75<span class="pct">%</span></div>
+        <div class="health-bar">
+          <div class="health-seg" style="background:#3B82F6;flex:3"></div>
+          <div class="health-seg" style="background:#8B5CF6;flex:1"></div>
+          <div class="health-seg" style="background:#F3F4F6;flex:0.5"></div>
+        </div>
+        <div class="health-detail">
+          <span>正常 <span class="hd-val">8</span></span>
+          <span>风险 <span class="hd-val red">2</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Design Tokens Table -->
+    <div class="component-wrap">
+      <div class="component-label">DesignTokens<span class="type">: CSS Variables</span></div>
+      <table class="token-table">
+        <thead>
+          <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="token-name">--color-primary</span></td>
+            <td><span class="token-swatch" style="background:#3B82F6"></span> <span class="token-value">#3B82F6</span></td>
+            <td>主色调</td>
+          </tr>
+          <tr>
+            <td><span class="token-name">--color-success</span></td>
+            <td><span class="token-swatch" style="background:#10B981"></span> <span class="token-value">#10B981</span></td>
+            <td>成功/正常</td>
+          </tr>
+          <tr>
+            <td><span class="token-name">--color-danger</span></td>
+            <td><span class="token-swatch" style="background:#EF4444"></span> <span class="token-value">#EF4444</span></td>
+            <td>警告/到期</td>
+          </tr>
+          <tr>
+            <td><span class="token-name">--radius-md</span></td>
+            <td><span class="token-value">8px</span></td>
+            <td>卡片圆角</td>
+          </tr>
+          <tr>
+            <td><span class="token-name">--spacing-sm</span></td>
+            <td><span class="token-value">8px</span></td>
+            <td>小间距</td>
+          </tr>
+          <tr>
+            <td><span class="token-name">--spacing-md</span></td>
+            <td><span class="token-value">16px</span></td>
+            <td>中间距</td>
+          </tr>
+          <tr>
+            <td><span class="token-name">--spacing-lg</span></td>
+            <td><span class="token-value">24px</span></td>
+            <td>大间距</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Spacing Scale -->
+  <div class="section-title">Spacing Scale</div>
+  <div class="component-wrap">
+    <div class="component-label">SpacingScale<span class="type">: 8px base</span></div>
+    <div class="spacing-demo">
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:8px;height:16px"></div>
+        <span class="spacing-label">4px</span>
+      </div>
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:16px;height:16px"></div>
+        <span class="spacing-label">8px</span>
+      </div>
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:24px;height:16px"></div>
+        <span class="spacing-label">12px</span>
+      </div>
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:32px;height:16px"></div>
+        <span class="spacing-label">16px</span>
+      </div>
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:48px;height:16px"></div>
+        <span class="spacing-label">24px</span>
+      </div>
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:64px;height:16px"></div>
+        <span class="spacing-label">32px</span>
+      </div>
+      <div class="spacing-block">
+        <div class="spacing-box" style="width:96px;height:16px"></div>
+        <span class="spacing-label">48px</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

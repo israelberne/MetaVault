@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Apple Product</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-start: #0f0c29;
+    --bg-mid: #302b63;
+    --bg-end: #24243e;
+    --glass: rgba(255,255,255,0.08);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-hover: rgba(255,255,255,0.14);
+    --text-primary: #f5f5f7;
+    --text-secondary: rgba(255,255,255,0.6);
+    --text-tertiary: rgba(255,255,255,0.35);
+    --accent: #2997ff;
+    --accent-glow: rgba(41,151,255,0.3);
+    --green: #30d158;
+    --orange: #ff9f0a;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Animated gradient orbs */
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bg-orb-1 {
+    width: 600px; height: 600px;
+    background: #2997ff;
+    top: -200px; right: -100px;
+    animation: float1 20s ease-in-out infinite;
+  }
+
+  .bg-orb-2 {
+    width: 400px; height: 400px;
+    background: #bf5af2;
+    bottom: -100px; left: -50px;
+    animation: float2 25s ease-in-out infinite;
+  }
+
+  .bg-orb-3 {
+    width: 300px; height: 300px;
+    background: #30d158;
+    top: 50%; left: 40%;
+    animation: float3 18s ease-in-out infinite;
+  }
+
+  @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-60px,40px); } }
+  @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px,-60px); } }
+  @keyframes float3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-30px,30px); } }
+
+  /* Content */
+  .content {
+    position: relative;
+    z-index: 1;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* Header */
+  header {
+    padding: 48px 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .brand span {
+    background: linear-gradient(90deg, #2997ff, #bf5af2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-time {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 80px 0 64px;
+  }
+
+  .hero h1 {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 16px;
+    background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 19px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  /* Stat Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--glass);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: default;
+  }
+
+  .stat-card:hover {
+    background: var(--glass-hover);
+    transform: scale(1.02);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .stat-icon.blue { background: rgba(41,151,255,0.2); }
+  .stat-icon.purple { background: rgba(191,90,242,0.2); }
+  .stat-icon.green { background: rgba(48,209,88,0.2); }
+  .stat-icon.orange { background: rgba(255,159,10,0.2); }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-value .unit {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-left: 2px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 8px;
+    font-weight: 400;
+  }
+
+  /* Two Column */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .glass-panel {
+    background: var(--glass);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 32px;
+  }
+
+  .panel-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+
+  /* Type Distribution - Donut */
+  .donut-container {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .donut {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .donut svg {
+    width: 140px;
+    height: 140px;
+    transform: rotate(-90deg);
+  }
+
+  .donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .donut-center .num {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .donut-center .label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .legend-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-left: auto;
+  }
+
+  /* Status */
+  .status-ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 16px;
+  }
+
+  .status-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 30px rgba(48,209,88,0.2);
+  }
+
+  .status-circle .num {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .status-label {
+    font-size: 14px;
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  .status-detail {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  /* Subscription Trend */
+  .trend-section {
+    margin-bottom: 32px;
+  }
+
+  .trend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+  }
+
+  .trend-amount {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .trend-amount .currency {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  .trend-period {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+
+  .trend-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 80px;
+  }
+
+  .trend-bar {
+    flex: 1;
+    border-radius: 6px 6px 2px 2px;
+    background: linear-gradient(180deg, var(--accent) 0%, rgba(41,151,255,0.3) 100%);
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 8px;
+  }
+
+  .trend-bar:hover {
+    background: linear-gradient(180deg, #5ab5ff 0%, rgba(41,151,255,0.5) 100%);
+  }
+
+  .trend-bar.current {
+    background: linear-gradient(180deg, var(--accent) 0%, rgba(41,151,255,0.6) 100%);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .trend-months {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .trend-month {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .trend-month.current {
+    color: var(--accent);
+  }
+
+  /* Notifications */
+  .notif-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(255,159,10,0.1);
+    border: 1px solid rgba(255,159,10,0.2);
+    border-radius: 14px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .notif-icon {
+    font-size: 18px;
+  }
+
+  .notif-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .notif-text strong {
+    color: var(--orange);
+    font-weight: 600;
+  }
+
+  .notif-action {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+  .delay-6 { animation-delay: 0.6s; }
+</style>
+</head>
+<body>
+
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
+
+<div class="content">
+  <header class="animate-in">
+    <div class="brand">Meta<span>Vault</span></div>
+    <div class="header-time">2026年5月</div>
+  </header>
+
+  <div class="hero animate-in delay-1">
+    <h1>你的资产，尽在掌握。</h1>
+    <p>统一管理物理资产、数字资产与产品订阅</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card animate-in delay-2">
+      <div class="stat-icon blue">&#9670;</div>
+      <div class="stat-label">资产总数</div>
+      <div class="stat-value">8<span class="unit">项</span></div>
+      <div class="stat-sub">3 种类型</div>
+    </div>
+    <div class="stat-card animate-in delay-3">
+      <div class="stat-icon purple">&#9733;</div>
+      <div class="stat-label">供应商</div>
+      <div class="stat-value">1<span class="unit">家</span></div>
+      <div class="stat-sub">已关联</div>
+    </div>
+    <div class="stat-card animate-in delay-4">
+      <div class="stat-icon green">&#165;</div>
+      <div class="stat-label">资产总值</div>
+      <div class="stat-value">5,199<span class="unit">元</span></div>
+      <div class="stat-sub">CNY</div>
+    </div>
+    <div class="stat-card animate-in delay-5">
+      <div class="stat-icon orange">&#9888;</div>
+      <div class="stat-label">即将到期</div>
+      <div class="stat-value">2<span class="unit">项</span></div>
+      <div class="stat-sub">需关注</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="glass-panel animate-in delay-5">
+      <div class="panel-header">资产类型分布</div>
+      <div class="donut-container">
+        <div class="donut">
+          <svg viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16"/>
+            <circle cx="70" cy="70" r="54" fill="none" stroke="#2997ff" stroke-width="16"
+              stroke-dasharray="212.06 339.29" stroke-dashoffset="0" stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="54" fill="none" stroke="#bf5af2" stroke-width="16"
+              stroke-dasharray="42.41 339.29" stroke-dashoffset="-212.06" stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="54" fill="none" stroke="#30d158" stroke-width="16"
+              stroke-dasharray="84.82 339.29" stroke-dashoffset="-254.47" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-center">
+            <div class="num">8</div>
+            <div class="label">总计</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#2997ff"></div>
+            <span class="legend-text">物理资产</span>
+            <span class="legend-value">5</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#bf5af2"></div>
+            <span class="legend-text">数字资产</span>
+            <span class="legend-value">1</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#30d158"></div>
+            <span class="legend-text">订阅</span>
+            <span class="legend-value">2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-panel animate-in delay-6">
+      <div class="panel-header">资产状态</div>
+      <div class="status-ring">
+        <div class="status-circle">
+          <span class="num">8</span>
+        </div>
+        <div class="status-label">全部使用中</div>
+        <div class="status-detail">0 闲置 · 0 已过期</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trend-section glass-panel animate-in delay-6">
+    <div class="trend-header">
+      <div>
+        <div class="trend-amount"><span class="currency">¥</span>298</div>
+        <div class="trend-period">2026年5月 · 订阅月费用</div>
+      </div>
+    </div>
+    <div class="trend-chart">
+      <div class="trend-bar" style="height:45%"></div>
+      <div class="trend-bar" style="height:52%"></div>
+      <div class="trend-bar" style="height:48%"></div>
+      <div class="trend-bar" style="height:60%"></div>
+      <div class="trend-bar current" style="height:75%"></div>
+    </div>
+    <div class="trend-months">
+      <div class="trend-month">1月</div>
+      <div class="trend-month">2月</div>
+      <div class="trend-month">3月</div>
+      <div class="trend-month">4月</div>
+      <div class="trend-month current">5月</div>
+    </div>
+  </div>
+
+  <div class="notif-bar animate-in delay-6">
+    <div class="notif-icon">&#128276;</div>
+    <div class="notif-text">你有 <strong>3</strong> 条未读提醒</div>
+    <div class="notif-action">查看全部 &rarr;</div>
+  </div>
+</div>
+
+</body>
+</html>

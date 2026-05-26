@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>MetaVault 设计风格探索</title>
+<style>
+body { margin: 0; background: #1a1a1a; color: #e5e5e5; font-family: system-ui, sans-serif; }
+h1 { text-align: center; padding: 2rem 1rem 0.5rem; font-size: 1.8rem; }
+.subtitle { text-align: center; color: #888; font-size: 0.9rem; margin-bottom: 2rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem; padding: 1rem 2rem 3rem; max-width: 1600px; margin: auto; }
+.card { background: #222; border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
+.card:hover { transform: translateY(-4px); }
+.card a { color: inherit; text-decoration: none; }
+.card img { width: 100%; display: block; border-bottom: 1px solid #333; }
+.card-body { padding: 1rem; }
+.card-body h3 { font-size: 1rem; margin: 0 0 0.25rem; }
+.card-body p { font-size: 0.8rem; color: #888; margin: 0; }
+.tag { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; margin-right: 4px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>MetaVault 设计风格探索</h1>
+<p class="subtitle">22 种视觉风格 × 仪表盘设计稿 — 点击任意卡片查看完整设计</p>
+<div class="grid">
+
+<div class="card"><a href="01-minimal-luxury.html"><img src="screenshots/01-minimal-luxury.png"><div class="card-body"><h3>01 极简高级风</h3><p>大量留白，金色点缀，衬线字体，极细线条，高端品牌质感</p><span class="tag" style="background:#b8956a;color:#fff">Minimal Luxury</span></div></a></div>
+
+<div class="card"><a href="02-apple-product.html"><img src="screenshots/02-apple-product.png"><div class="card-body"><h3>02 Apple 产品官网风</h3><p>深色渐变背景，毛玻璃卡片，圆角设计，产品发布会感</p><span class="tag" style="background:#333;color:#e5e5e5">Apple Product</span></div></a></div>
+
+<div class="card"><a href="03-swiss-international.html"><img src="screenshots/03-swiss-international.png"><div class="card-body"><h3>03 瑞士国际主义风</h3><p>严格网格系统，红黑白三色，等宽数字，几何分割，瑞士海报</p><span class="tag" style="background:#FF0000;color:#fff">Swiss International</span></div></a></div>
+
+<div class="card"><a href="04-bento-grid.html"><img src="screenshots/04-bento-grid.png"><div class="card-body"><h3>04 Bento 卡片风</h3><p>不等大小网格拼贴，圆角柔和配色，像 Apple Bento Grid</p><span class="tag" style="background:#6366f1;color:#fff">Bento Grid</span></div></a></div>
+
+<div class="card"><a href="05-dark-saas.html"><img src="screenshots/05-dark-saas.png"><div class="card-body"><h3>05 深色科技 SaaS 风</h3><p>纯黑背景，荧光青/紫 accent，网格线，终端/矩阵感</p><span class="tag" style="background:#00D4FF;color:#0A0A0A">Dark SaaS</span></div></a></div>
+
+<div class="card"><a href="06-design-system.html"><img src="screenshots/06-design-system.png"><div class="card-body"><h3>06 设计系统风</h3><p>组件标注，色板展示，间距 token，Storybook/Figma 风格</p><span class="tag" style="background:#3B82F6;color:#fff">Design System</span></div></a></div>
+
+<div class="card"><a href="07-glassmorphism.html"><img src="screenshots/07-glassmorphism.png"><div class="card-body"><h3>07 玻璃拟态风</h3><p>半透明卡片，毛玻璃 backdrop-filter，彩色光斑背景，iOS 风格</p><span class="tag" style="background:#a78bfa;color:#fff">Glassmorphism</span></div></a></div>
+
+<div class="card"><a href="08-3d-immersive.html"><img src="screenshots/08-3d-immersive.png"><div class="card-body"><h3>08 3D 沉浸风</h3><p>CSS 3D transforms，透视浮起效果，科幻 HUD 信息面板</p><span class="tag" style="background:#0ff;color:#111">3D Immersive</span></div></a></div>
+
+<div class="card"><a href="09-data-viz.html"><img src="screenshots/09-data-viz.png"><div class="card-body"><h3>09 数据可视化风</h3><p>图表为主，SVG 手绘图表，深色+鲜艳数据色，Bloomberg terminal</p><span class="tag" style="background:#1A1A2E;color:#00FF88">Data Viz</span></div></a></div>
+
+<div class="card"><a href="10-magazine-editorial.html"><img src="screenshots/10-magazine-editorial.png"><div class="card-body"><h3>10 杂志编辑风</h3><p>封面大标题，衬线字体，不对称布局，段落式数据，Monocle 质感</p><span class="tag" style="background:#8B0000;color:#fff">Magazine Editorial</span></div></a></div>
+
+<div class="card"><a href="11-dynamic-typography.html"><img src="screenshots/11-dynamic-typography.png"><div class="card-body"><h3>11 动态排版风</h3><p>超大字号数据，weight 变化节奏，文字即设计，排版艺术作品</p><span class="tag" style="background:#000;color:#fff">Dynamic Typography</span></div></a></div>
+
+<div class="card"><a href="12-fullscreen-visual.html"><img src="screenshots/12-fullscreen-visual.png"><div class="card-body"><h3>12 全屏视觉风</h3><p>每块占满视口，大渐变背景+叠加数据，Apple 滚动叙事</p><span class="tag" style="background:linear-gradient(90deg,#1a2a6c,#b21f1f,#fdbb2d);color:#fff">Fullscreen Visual</span></div></a></div>
+
+<div class="card"><a href="13-neo-brutalism.html"><img src="screenshots/13-neo-brutalism.png"><div class="card-body"><h3>13 新野兽派</h3><p>粗黑边框，高饱和撞色，硬边阴影，反精致反优雅</p><span class="tag" style="background:#FFD700;color:#000">Neo-Brutalism</span></div></a></div>
+
+<div class="card"><a href="14-retro-futurism.html"><img src="screenshots/14-retro-futurism.png"><div class="card-body"><h3>14 复古未来主义</h3><p>80年代科幻，霓虹色+暗色背景，CRT 扫描线，Tron 美学</p><span class="tag" style="background:#0D0221;color:#00FFFF">Retro-Futurism</span></div></a></div>
+
+<div class="card"><a href="15-y2k-digital.html"><img src="screenshots/15-y2k-digital.png"><div class="card-body"><h3>15 Y2K 数字风</h3><p>2000年早期互联网，银色+冰蓝+粉紫，3D立体文字，泡泡元素</p><span class="tag" style="background:linear-gradient(90deg,#C0C0C0,#87CEEB);color:#333">Y2K Digital</span></div></a></div>
+
+<div class="card"><a href="16-illustration-brand.html"><img src="screenshots/16-illustration-brand.png"><div class="card-body"><h3>16 插画品牌风</h3><p>手绘 SVG 插画，品牌色统一，圆润友好，Notion/Headspace 风格</p><span class="tag" style="background:#F97316;color:#fff">Illustration Brand</span></div></a></div>
+
+<div class="card"><a href="17-handwritten-graffiti.html"><img src="screenshots/17-handwritten-graffiti.png"><div class="card-body"><h3>17 手写涂鸦风</h3><p>手写字体，涂鸦边框，草图线条，纸上设计稿质感</p><span class="tag" style="background:#fff;color:#333;border:1px solid #333">Handwritten Graffiti</span></div></a></div>
+
+<div class="card"><a href="18-organic-nature.html"><img src="screenshots/18-organic-nature.png"><div class="card-body"><h3>18 有机自然风</h3><p>大地色/森林绿，超大圆角，叶子装饰，温暖柔和</p><span class="tag" style="background:#2D5016;color:#E8D5B7">Organic Nature</span></div></a></div>
+
+<div class="card"><a href="19-financial-terminal.html"><img src="screenshots/19-financial-terminal.png"><div class="card-body"><h3>19 金融终端风</h3><p>银行级仪表盘，深蓝白配色，资产净值曲线，信赖感，招商银行风格</p><span class="tag" style="background:#1A3A5C;color:#fff">Financial Terminal</span></div></a></div>
+
+<div class="card"><a href="20-timeline.html"><img src="screenshots/20-timeline.png"><div class="card-body"><h3>20 日历时间线风</h3><p>甘特图时间线为主视觉，TODAY标记线，到期倒计时，白底蓝紫琥珀色</p><span class="tag" style="background:#3B82F6;color:#fff">Calendar/Timeline</span></div></a></div>
+
+<div class="card"><a href="21-territory-map.html"><img src="screenshots/21-territory-map.png"><div class="card-body"><h3>21 地图空间风</h3><p>领地地图SVG可视化，鸟瞰资产帝国，等高线+指南针+贸易路径</p><span class="tag" style="background:#8B7355;color:#E8D5B7">Territory Map</span></div></a></div>
+
+<div class="card"><a href="23-space-time-v2.html#/"><img src="screenshots/23-space-time-v2-overview.png"><div class="card-body"><h3>23 时空融合 v2</h3><p>总览页(甘特时间轴+地形地图语言) + 关联关系页(严格复制21号领地地图)，双页路由</p><span class="tag" style="background:linear-gradient(90deg,#3B6B8A,#4a7c9b);color:#fff">Space-Time v2</span></div></a></div>
+
+</div>
+</body>
+</html>

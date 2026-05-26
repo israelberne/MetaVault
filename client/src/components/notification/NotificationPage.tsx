@@ -39,7 +39,7 @@ function NotificationPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">通知</h2>
+        <h2 className="font-display text-xl font-bold tracking-[2px] uppercase">通知</h2>
         <div className="flex items-center gap-2">
           <Button
             variant={filter === "unread" ? "default" : "outline"}

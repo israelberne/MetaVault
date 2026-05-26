@@ -57,7 +57,7 @@ function SupplierForm() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-      <h2 className="text-xl font-semibold">{isEdit ? "编辑供应商" : "新建优秀供应商"}</h2>
+      <h2 className="font-display text-xl font-bold tracking-[2px] uppercase">{isEdit ? "编辑供应商" : "新建供应商"}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">

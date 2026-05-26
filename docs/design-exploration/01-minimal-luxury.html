@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Minimal Luxury</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;300;500;600&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #fafafa;
+    --gold: #b8956a;
+    --gold-light: #d4b896;
+    --gold-muted: rgba(184,149,106,0.12);
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #9a9a9a;
+    --surface: #ffffff;
+    --divider: rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--white);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  header {
+    padding: 48px 80px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 0.5px solid var(--divider);
+  }
+
+  .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--text-primary);
+  }
+
+  .brand span {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .header-meta {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  /* Main */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 80px 96px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 32px;
+    font-weight: 500;
+  }
+
+  /* Stat Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-bottom: 80px;
+  }
+
+  .stat-card {
+    padding: 40px 32px;
+    background: var(--surface);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.03), 0 0 1px rgba(0,0,0,0.06);
+    position: relative;
+    transition: box-shadow 0.4s ease;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.08);
+  }
+
+  .stat-card:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 0.5px;
+    background: var(--divider);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .stat-value.gold {
+    color: var(--gold);
+  }
+
+  .stat-unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-tertiary);
+  }
+
+  .stat-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 3px 10px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 0.5px solid var(--gold);
+    color: var(--gold);
+    border-radius: 2px;
+  }
+
+  /* Two Column Layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    margin-bottom: 80px;
+  }
+
+  .panel {
+    padding: 40px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.03), 0 0 1px rgba(0,0,0,0.06);
+    background: var(--surface);
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+
+  /* Type Distribution */
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 0.5px solid var(--divider);
+  }
+
+  .type-row:last-child {
+    border-bottom: none;
+  }
+
+  .type-name {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+  }
+
+  .type-bar-container {
+    flex: 1;
+    margin: 0 32px;
+    height: 1px;
+    background: var(--divider);
+    position: relative;
+  }
+
+  .type-bar-fill {
+    position: absolute;
+    left: 0;
+    top: -1px;
+    height: 3px;
+    background: var(--gold);
+    opacity: 0.6;
+  }
+
+  .type-count {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--text-primary);
+    min-width: 24px;
+    text-align: right;
+  }
+
+  /* Status */
+  .status-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 40px 0;
+  }
+
+  .status-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 300;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .status-divider-line {
+    width: 0.5px;
+    height: 48px;
+    background: var(--gold);
+    opacity: 0.4;
+  }
+
+  .status-text {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    line-height: 1.8;
+  }
+
+  .status-text strong {
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  /* Subscription Trend */
+  .trend-section {
+    margin-bottom: 80px;
+  }
+
+  .trend-chart {
+    box-shadow: 0 1px 8px rgba(0,0,0,0.03), 0 0 1px rgba(0,0,0,0.06);
+    background: var(--surface);
+    padding: 48px;
+  }
+
+  .trend-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 300;
+    color: var(--gold);
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+
+  .trend-period {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-tertiary);
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  .trend-bar {
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), transparent);
+    margin-bottom: 8px;
+    border-radius: 1px;
+    position: relative;
+  }
+
+  .trend-bar::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+
+  .trend-labels {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .trend-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+  }
+
+  /* Notifications */
+  .notif-section {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 40px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.03), 0 0 1px rgba(0,0,0,0.06);
+    background: var(--surface);
+  }
+
+  .notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .notif-text {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+  }
+
+  .notif-count {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--gold);
+    margin-left: auto;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 48px 80px;
+    border-top: 0.5px solid var(--divider);
+  }
+
+  .footer-text {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Meta<span>Vault</span></div>
+  <div class="header-meta">Dashboard — Overview</div>
+</header>
+
+<main>
+  <div class="section-label">Overview</div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">资产总数</div>
+      <div class="stat-value">8</div>
+      <div class="stat-unit">Assets</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">供应商</div>
+      <div class="stat-value">1</div>
+      <div class="stat-unit">Supplier</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">资产总值</div>
+      <div class="stat-value gold">5,199</div>
+      <div class="stat-unit">CNY</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">即将到期</div>
+      <div class="stat-value">2</div>
+      <div class="stat-badge">Attention</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">资产类型分布</div>
+      <div class="type-row">
+        <span class="type-name">物理资产</span>
+        <div class="type-bar-container">
+          <div class="type-bar-fill" style="width: 62.5%"></div>
+        </div>
+        <span class="type-count">5</span>
+      </div>
+      <div class="type-row">
+        <span class="type-name">数字资产</span>
+        <div class="type-bar-container">
+          <div class="type-bar-fill" style="width: 12.5%"></div>
+        </div>
+        <span class="type-count">1</span>
+      </div>
+      <div class="type-row">
+        <span class="type-name">订阅</span>
+        <div class="type-bar-container">
+          <div class="type-bar-fill" style="width: 25%"></div>
+        </div>
+        <span class="type-count">2</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">资产状态</div>
+      <div class="status-display">
+        <div class="status-number">8</div>
+        <div class="status-divider-line"></div>
+        <div class="status-text">
+          <strong>使用中</strong><br>
+          0 闲置<br>
+          0 已过期
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trend-section">
+    <div class="section-label">订阅月费用</div>
+    <div class="trend-chart">
+      <div class="trend-value">¥298</div>
+      <div class="trend-period">2026 年 5 月</div>
+      <div class="trend-bar" style="width: 70%"></div>
+      <div class="trend-labels">
+        <span class="trend-label">1 月</span>
+        <span class="trend-label">2 月</span>
+        <span class="trend-label">3 月</span>
+        <span class="trend-label">4 月</span>
+        <span class="trend-label">5 月</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="notif-section">
+    <div class="notif-dot"></div>
+    <div class="notif-text">未读提醒</div>
+    <div class="notif-count">3</div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-text">MetaVault — Asset Intelligence</div>
+</footer>
+
+</body>
+</html>

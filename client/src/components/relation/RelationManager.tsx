@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, X, Link2 } from "lucide-react";
-import { useRelations, useAddRelation, useDeleteRelation } from "@/hooks/useRelations";
+import { useRelations, useAddRelation, useRemoveRelation } from "@/hooks/useRelations";
 import { fetchAssets } from "@/lib/api-assets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,13 @@ const relationLabels: Record<string, string> = {
   related_to: "关联",
 };
 
+const relationBadgeVariant: Record<string, "physical" | "digital" | "subscription" | "secondary"> = {
+  depends_on: "physical",
+  contains: "digital",
+  bound_to: "subscription",
+  related_to: "secondary",
+};
+
 interface Props {
   assetId: string;
 }
@@ -28,7 +35,7 @@ interface Props {
 function RelationManager({ assetId }: Props) {
   const { data: relations, isLoading } = useRelations(assetId);
   const addRelation = useAddRelation();
-  const deleteRelation = useDeleteRelation();
+  const deleteRelation = useRemoveRelation();
   const [adding, setAdding] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<Asset[]>([]);
@@ -45,8 +52,8 @@ function RelationManager({ assetId }: Props) {
     if (!selectedAsset) return;
     addRelation.mutate(
       {
-        source_id: assetId,
-        target_id: selectedAsset.id,
+        sourceId: assetId,
+        targetId: selectedAsset.id,
         relation: relationType,
       },
       {
@@ -67,7 +74,7 @@ function RelationManager({ assetId }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold flex items-center gap-2">
+        <h3 className="font-display text-sm font-semibold tracking-wide flex items-center gap-2">
           <Link2 className="h-4 w-4" />
           关联资产
         </h3>
@@ -78,7 +85,7 @@ function RelationManager({ assetId }: Props) {
       </div>
 
       {adding && (
-        <div className="space-y-2 p-3 border rounded-md bg-muted/30">
+        <div className="space-y-2 p-3 border border-ink4 rounded-md bg-muted/30">
           <div className="flex gap-2">
             <Input
               placeholder="搜索资产..."
@@ -93,11 +100,11 @@ function RelationManager({ assetId }: Props) {
           </div>
 
           {searchResults.length > 0 && !selectedAsset && (
-            <div className="max-h-32 overflow-y-auto border rounded-md">
+            <div className="max-h-32 overflow-y-auto border border-ink4 rounded-md">
               {searchResults.map((asset) => (
                 <button
                   key={asset.id}
-                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-muted truncate"
+                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-[rgba(44,36,24,0.04)] truncate"
                   onClick={() => setSelectedAsset(asset)}
                 >
                   {asset.name}
@@ -156,10 +163,12 @@ function RelationManager({ assetId }: Props) {
           {relations.map((r: any) => (
             <div
               key={r.id}
-              className="flex items-center justify-between gap-2 p-2 border rounded-md text-sm"
+              className="flex items-center justify-between gap-2 p-2 border border-ink4 rounded-md text-sm"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <Badge variant="outline">{relationLabels[r.relation] ?? r.relation}</Badge>
+                <Badge variant={relationBadgeVariant[r.relation] ?? "secondary"}>
+                  {relationLabels[r.relation] ?? r.relation}
+                </Badge>
                 <span className="truncate">{r.target_name ?? r.target_id}</span>
               </div>
               <Button

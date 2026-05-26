@@ -98,7 +98,7 @@ function Header() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const { data: notifications } = useNotifications();
-  const unread = notifications?.filter((n: any) => !n.dismissed_at).length ?? 0;
+  const unread = notifications?.filter((n: any) => !n.is_read && !n.is_dismissed).length ?? 0;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -118,7 +118,7 @@ function Header() {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b px-4 gap-2">
+    <header className="nav-dashed-border sticky top-0 z-50 flex h-[54px] items-center justify-between border-b border-ink3 bg-pg px-6 gap-2">
       <div className="flex items-center gap-1">
         <ThemeToggle />
         <PushToggle />
@@ -130,17 +130,17 @@ function Header() {
           >
             <Bell className="h-4 w-4" />
             {unread > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-wrn text-[10px] text-white font-bold animate-badge-pulse">
                 {unread}
               </span>
             )}
           </Button>
           {notifOpen && notifications && notifications.length > 0 && (
-            <div className="absolute left-0 top-full mt-1 w-72 rounded-md border bg-card shadow-lg z-50 max-h-64 overflow-y-auto">
+            <div className="absolute left-0 top-full mt-1 w-72 rounded-md border border-ink3 bg-card shadow-lg z-50 max-h-64 overflow-y-auto">
               {notifications.slice(0, 10).map((n: any) => (
                 <div
                   key={n.id}
-                  className="border-b px-3 py-2 text-sm last:border-0"
+                  className="border-b border-ink4 px-3 py-2 text-sm last:border-0"
                 >
                   <p className="font-medium">{n.message}</p>
                   <p className="text-xs text-muted-foreground">
@@ -150,7 +150,7 @@ function Header() {
               ))}
               <Link
                 to="/notifications"
-                className="block px-3 py-2 text-sm text-center text-muted-foreground hover:text-primary border-t"
+                className="block px-3 py-2 text-sm text-center text-muted-foreground hover:text-foreground border-t border-ink4"
                 onClick={() => setNotifOpen(false)}
               >
                 查看全部通知

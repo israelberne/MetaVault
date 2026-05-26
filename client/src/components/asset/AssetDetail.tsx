@@ -16,10 +16,21 @@ import RelationManager from "@/components/relation/RelationManager";
 
 const typeLabels: Record<AssetType, string> = { physical: "物理资产", digital: "数字资产", subscription: "订阅" };
 const statusLabels: Record<AssetStatus, string> = { active: "使用中", idle: "闲置", expired: "过期", disposed: "已处置" };
-const relationLabels: Record<string, string> = { depends_on: "依赖", contains: "包含", bound_to: "绑定", related_to: "相关" };
-
 const sourceLabels: Record<string, string> = { purchase: "购入", self_build: "自建", donation: "捐赠", transfer: "调拨" };
 const usageFreqLabels: Record<string, string> = { daily: "每天", weekly: "每周", monthly: "每月", rarely: "很少" };
+
+const typeBadgeVariant: Record<AssetType, "physical" | "digital" | "subscription"> = {
+  physical: "physical",
+  digital: "digital",
+  subscription: "subscription",
+};
+
+const statusBadgeStyles: Record<AssetStatus, string> = {
+  active: "bg-[#4a9e6e]/10 text-[#4a9e6e] dark:bg-[#4a9e6e]/20",
+  idle: "bg-sub08 text-sub",
+  expired: "bg-phy08 text-wrn",
+  disposed: "bg-ink4/50 text-ink2",
+};
 
 function ReplacementSuppliers({ navigate }: { navigate: (path: string) => void }) {
   const { data: suppliers } = useQuery({
@@ -31,16 +42,16 @@ function ReplacementSuppliers({ navigate }: { navigate: (path: string) => void }
 
   return (
     <Card>
-      <CardHeader><CardTitle>推荐替换供应商</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="font-display text-sm font-semibold tracking-wide">推荐替换供应商</CardTitle></CardHeader>
       <CardContent className="space-y-2 text-sm">
         {suppliers.map((s) => (
           <div
             key={s.id}
-            className="flex items-center justify-between rounded-md border px-3 py-2 cursor-pointer hover:bg-accent"
+            className="flex items-center justify-between rounded-md border border-ink4 px-3 py-2 cursor-pointer hover:bg-[rgba(44,36,24,0.04)]"
             onClick={() => navigate(`/suppliers/${s.id}`)}
           >
             <div className="flex items-center gap-2">
-              <Star className={`h-4 w-4 ${s.is_favorite ? "fill-primary text-primary" : ""}`} />
+              <Star className={`h-4 w-4 ${s.is_favorite ? "fill-sub text-sub" : ""}`} />
               <span className="font-medium">{s.name}</span>
             </div>
             <Badge variant="outline">{s.type === "mixed" ? "混合" : "物理"}</Badge>
@@ -63,7 +74,6 @@ function AssetDetail() {
   if (isLoading) return <Skeleton className="h-64 rounded-lg" />;
   if (!asset) return <div className="text-muted-foreground">资产不存在</div>;
 
-  // 块级 cast：按类型获取 ext
   const pExt = asset.type === "physical" ? (asset.ext as PhysicalExt) : null;
   const dExt = asset.type === "digital" ? (asset.ext as DigitalExt) : null;
   const sExt = asset.type === "subscription" ? (asset.ext as SubscriptionExt) : null;
@@ -88,14 +98,14 @@ function AssetDetail() {
       {/* 头部 */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent">
+          <button onClick={() => navigate(-1)} className="rounded-md p-1.5 text-muted-foreground hover:bg-[rgba(44,36,24,0.04)]">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-xl font-semibold">{asset.name}</h2>
+            <h2 className="font-display text-xl font-bold tracking-wide">{asset.name}</h2>
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              <Badge variant="outline">{typeLabels[asset.type]}</Badge>
-              <Badge>{statusLabels[asset.status]}</Badge>
+              <Badge variant={typeBadgeVariant[asset.type]}>{typeLabels[asset.type]}</Badge>
+              <Badge className={statusBadgeStyles[asset.status]} variant="secondary">{statusLabels[asset.status]}</Badge>
               <span>{categoryLabels[asset.category] ?? asset.category}</span>
             </div>
           </div>
@@ -114,15 +124,15 @@ function AssetDetail() {
 
       {/* 基本信息 */}
       <Card>
-        <CardHeader><CardTitle>基本信息</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="font-display text-sm font-semibold tracking-wide">基本信息</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           {asset.purchase_date && <div><span className="text-muted-foreground">获取日期：</span>{asset.purchase_date}</div>}
-          {asset.purchase_price != null && <div><span className="text-muted-foreground">获取价格：</span>¥{asset.purchase_price.toLocaleString()}</div>}
+          {asset.purchase_price != null && <div><span className="text-muted-foreground">获取价格：</span><span className="font-mono">¥{asset.purchase_price.toLocaleString()}</span></div>}
           <div><span className="text-muted-foreground">币种：</span>{asset.currency}</div>
           {asset.supplier_id && supplier && (
             <div><span className="text-muted-foreground">供应商：</span>
-              <span className="cursor-pointer hover:underline text-primary" onClick={() => navigate(`/suppliers/${asset.supplier_id}`)}>
-                {supplier.is_favorite && <Star className="h-3 w-3 fill-primary text-primary inline mr-0.5" />}
+              <span className="cursor-pointer hover:underline text-phy" onClick={() => navigate(`/suppliers/${asset.supplier_id}`)}>
+                {supplier.is_favorite && <Star className="h-3 w-3 fill-sub text-sub inline mr-0.5" />}
                 {supplier.name}
               </span>
             </div>
@@ -141,7 +151,7 @@ function AssetDetail() {
 
       {/* 扩展信息 */}
       <Card>
-        <CardHeader><CardTitle>类型详情</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="font-display text-sm font-semibold tracking-wide">类型详情</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           {pExt && (
             <>
@@ -152,7 +162,7 @@ function AssetDetail() {
               {pExt.owner && <div><span className="text-muted-foreground">归属人：</span>{pExt.owner}</div>}
               {pExt.source && <div><span className="text-muted-foreground">资产来源：</span>{sourceLabels[pExt.source] ?? pExt.source}</div>}
               {pExt.warranty_expiry && <div><span className="text-muted-foreground">保修到期：</span>{pExt.warranty_expiry}</div>}
-              {pExt.serial_number && <div><span className="text-muted-foreground">序列号：</span>{pExt.serial_number}</div>}
+              {pExt.serial_number && <div><span className="text-muted-foreground">序列号：</span><span className="font-mono">{pExt.serial_number}</span></div>}
             </>
           )}
           {dExt && (
@@ -173,14 +183,14 @@ function AssetDetail() {
           {sExt && (
             <>
               {sExt.billing_cycle && <div><span className="text-muted-foreground">计费周期：</span>{sExt.billing_cycle}</div>}
-              {sExt.amount != null && <div><span className="text-muted-foreground">每期费用：</span>¥{Number(sExt.amount).toLocaleString()}</div>}
+              {sExt.amount != null && <div><span className="text-muted-foreground">每期费用：</span><span className="font-mono">¥{Number(sExt.amount).toLocaleString()}</span></div>}
               {sExt.next_billing_date && <div><span className="text-muted-foreground">下次扣费：</span>{sExt.next_billing_date}</div>}
               {sExt.trial_end && <div><span className="text-muted-foreground">试用到期：</span>{sExt.trial_end}</div>}
               {sExt.usage_frequency && <div><span className="text-muted-foreground">使用频率：</span>{usageFreqLabels[sExt.usage_frequency] ?? sExt.usage_frequency}</div>}
               {sExt.screenshot_url && (
                 <div className="md:col-span-2">
                   <span className="text-muted-foreground">订阅截图：</span>
-                  <img src={sExt.screenshot_url} alt="订阅截图" className="mt-1 max-w-xs rounded-md border" />
+                  <img src={sExt.screenshot_url} alt="订阅截图" className="mt-1 max-w-xs rounded-md border border-ink4" />
                 </div>
               )}
             </>

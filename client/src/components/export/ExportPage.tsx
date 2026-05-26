@@ -32,7 +32,7 @@ function ExportPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h2 className="text-xl font-semibold">数据导出</h2>
+      <h2 className="font-display text-xl font-bold tracking-[2px] uppercase">数据导出</h2>
 
       <Card>
         <CardHeader>

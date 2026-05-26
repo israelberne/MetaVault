@@ -6,7 +6,7 @@ import { fetchRelations } from "@/lib/api-relations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardColorBar } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -31,21 +31,37 @@ const statusLabels: Record<AssetStatus, string> = {
   disposed: "已处置",
 };
 
-const statusColors: Record<AssetStatus, string> = {
-  active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  idle: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-  expired: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-  disposed: "bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-400",
+const typeColorMap: Record<AssetType, string> = {
+  physical: "var(--color-phy)",
+  digital: "var(--color-dig)",
+  subscription: "var(--color-sub)",
+};
+
+const statusBadgeStyles: Record<AssetStatus, string> = {
+  active: "bg-[#4a9e6e]/10 text-[#4a9e6e] dark:bg-[#4a9e6e]/20",
+  idle: "bg-sub08 text-sub",
+  expired: "bg-phy08 text-wrn",
+  disposed: "bg-ink4/50 text-ink2",
 };
 
 function AssetList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filters, setFilters] = useState<AssetFilters>({});
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [batchStatus, setBatchStatus] = useState<AssetStatus | "">("");
+
+  const assetType = searchParams.get("type") as AssetType | null;
+  const status = searchParams.get("status") as AssetStatus | null;
+  const sort = (searchParams.get("sort") as AssetFilters["sort"]) || "updated_at";
   const search = searchParams.get("q") ?? "";
+
+  const filters: AssetFilters = {
+    asset_type: assetType ?? undefined,
+    status: status ?? undefined,
+    sort,
+  };
+
   const { data: assets, isLoading } = useAssets({
     ...filters,
     search: search || undefined,
@@ -116,10 +132,12 @@ function AssetList() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Select
-            value={filters.asset_type || "all"}
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, asset_type: v === "all" ? undefined : v as AssetType }))
-            }
+            value={assetType || "all"}
+            onValueChange={(v) => {
+              const p = new URLSearchParams(searchParams);
+              if (v === "all") p.delete("type"); else p.set("type", v);
+              setSearchParams(p);
+            }}
           >
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="资产类型" />
@@ -133,10 +151,12 @@ function AssetList() {
           </Select>
 
           <Select
-            value={filters.status || "all"}
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, status: v === "all" ? undefined : v as AssetStatus }))
-            }
+            value={status || "all"}
+            onValueChange={(v) => {
+              const p = new URLSearchParams(searchParams);
+              if (v === "all") p.delete("status"); else p.set("status", v);
+              setSearchParams(p);
+            }}
           >
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="状态" />
@@ -151,10 +171,12 @@ function AssetList() {
           </Select>
 
           <Select
-            value={filters.sort || "updated_at"}
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, sort: v as AssetFilters["sort"] }))
-            }
+            value={sort}
+            onValueChange={(v) => {
+              const p = new URLSearchParams(searchParams);
+              p.set("sort", v);
+              setSearchParams(p);
+            }}
           >
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="排序" />
@@ -172,7 +194,11 @@ function AssetList() {
             <Input
               placeholder="搜索..."
               value={search}
-              onChange={(e) => setSearchParams(e.target.value ? { q: e.target.value } : {})}
+              onChange={(e) => {
+                const p = new URLSearchParams(searchParams);
+                if (e.target.value) p.set("q", e.target.value); else p.delete("q");
+                setSearchParams(p);
+              }}
               className="pl-8"
             />
           </div>
@@ -237,7 +263,7 @@ function AssetList() {
           {assets.map((asset) => (
             <Card
               key={asset.id}
-              className={`cursor-pointer transition-shadow hover:shadow-md ${selected.has(asset.id) ? "ring-2 ring-primary" : ""}`}
+              className={`cursor-pointer transition-shadow hover:shadow-md ${selected.has(asset.id) ? "ring-2 ring-ink" : ""}`}
               onClick={() => {
                 if (selectMode) {
                   toggleSelect(asset.id);
@@ -246,39 +272,42 @@ function AssetList() {
                 }
               }}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-2 min-w-0">
-                    {selectMode && (
-                      <span className="mt-0.5">
-                        {selected.has(asset.id) ? (
-                          <CheckSquare className="h-4 w-4 text-primary" />
-                        ) : (
-                          <Square className="h-4 w-4 text-muted-foreground" />
-                        )}
+              <div className="flex">
+                <CardColorBar color={typeColorMap[asset.type]} />
+                <CardContent className="p-4 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 min-w-0">
+                      {selectMode && (
+                        <span className="mt-0.5">
+                          {selected.has(asset.id) ? (
+                            <CheckSquare className="h-4 w-4 text-ink" />
+                          ) : (
+                            <Square className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="font-medium truncate">{asset.name}</h3>
+                        <p className="text-sm text-muted-foreground">{categoryLabels[asset.category] ?? asset.category}</p>
+                      </div>
+                    </div>
+                    <Badge className={statusBadgeStyles[asset.status]} variant="secondary">
+                      {statusLabels[asset.status]}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Badge variant={asset.type}>{typeLabels[asset.type]}</Badge>
+                    {asset.purchase_price != null && (
+                      <span className="font-mono">¥{asset.purchase_price.toLocaleString()}</span>
+                    )}
+                    {asset.tags?.length > 0 && (
+                      <span className="truncate">
+                        {asset.tags.slice(0, 2).join("、")}
                       </span>
                     )}
-                    <div className="min-w-0">
-                      <h3 className="font-medium truncate">{asset.name}</h3>
-                      <p className="text-sm text-muted-foreground">{categoryLabels[asset.category] ?? asset.category}</p>
-                    </div>
                   </div>
-                  <Badge className={statusColors[asset.status]} variant="secondary">
-                    {statusLabels[asset.status]}
-                  </Badge>
-                </div>
-                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant="outline">{typeLabels[asset.type]}</Badge>
-                  {asset.purchase_price != null && (
-                    <span>¥{asset.purchase_price.toLocaleString()}</span>
-                  )}
-                  {asset.tags?.length > 0 && (
-                    <span className="truncate">
-                      {asset.tags.slice(0, 2).join("、")}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
           ))}
         </div>
@@ -288,7 +317,7 @@ function AssetList() {
       {!selectMode && (
         <button
           onClick={() => navigate("/assets/new")}
-          className="fixed bottom-20 right-4 md:hidden h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+          className="fixed bottom-20 right-4 md:hidden h-12 w-12 rounded-full bg-ink text-pg shadow-lg flex items-center justify-center"
         >
           <Plus className="h-6 w-6" />
         </button>

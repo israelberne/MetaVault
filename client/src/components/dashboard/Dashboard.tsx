@@ -1,227 +1,316 @@
-import {
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { Package, Building2, Bell, AlertTriangle } from "lucide-react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bell, AlertTriangle, RefreshCw, TrendingDown } from "lucide-react";
 import {
   useDashboardOverview,
   useHealthOverview,
-  useDashboardTrends,
+  useSubscriptionSummary,
 } from "@/hooks/useDashboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAssets } from "@/hooks/useAssets";
+import GanttTimeline from "./GanttTimeline";
+import MiniCalendar from "./MiniCalendar";
 
 const TYPE_COLORS: Record<string, string> = {
-  physical: "#3b82f6",
-  digital: "#8b5cf6",
-  subscription: "#f59e0b",
+  physical: "var(--color-phy)",
+  digital: "var(--color-dig)",
+  subscription: "var(--color-sub)",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active: "#22c55e",
-  idle: "#f59e0b",
-  expired: "#ef4444",
-  disposed: "#6b7280",
-};
-
-const typeLabels: Record<string, string> = {
-  physical: "物理资产",
-  digital: "数字资产",
+const TYPE_LABELS: Record<string, string> = {
+  physical: "物理",
+  digital: "数字",
   subscription: "订阅",
 };
 
-const statusLabels: Record<string, string> = {
-  active: "使用中",
-  idle: "闲置",
-  expired: "已过期",
-  disposed: "已报废",
-};
-
-function Dashboard() {
-  const { data: overview } = useDashboardOverview();
+function ReminderPanel() {
+  const navigate = useNavigate();
   const { data: health } = useHealthOverview();
-  const { data: trends } = useDashboardTrends();
+  const { data: assets } = useAssets();
 
-  const byType = (overview?.byType ?? []).map((item: any) => ({
-    name: typeLabels[item.type] ?? item.type,
-    value: item.count,
-    color: TYPE_COLORS[item.type] ?? "#94a3b8",
-  }));
+  const expiring = health?.expiringDetails ?? [];
+  const unread = health?.unreadNotifications ?? 0;
 
-  const byStatus = (overview?.byStatus ?? []).map((item: any) => ({
-    name: statusLabels[item.status] ?? item.status,
-    value: item.count,
-    color: STATUS_COLORS[item.status] ?? "#94a3b8",
-  }));
+  const expiringByType = useMemo(() => {
+    const grouped: Record<string, any[]> = { physical: [], digital: [], subscription: [] };
+    for (const item of expiring) {
+      if (grouped[item.type] && grouped[item.type].length < 3) {
+        grouped[item.type].push(item);
+      }
+    }
+    return grouped;
+  }, [expiring]);
 
-  // 聚合趋势数据：按月份合并所有订阅的 monthly_cost
-  const trendMap = new Map<string, number>();
-  for (const item of trends ?? []) {
-    const prev = trendMap.get(item.month) ?? 0;
-    trendMap.set(item.month, prev + item.monthly_cost);
+  const replacements = (assets ?? [])
+    .filter(a => {
+      if (a.type !== "physical") return false;
+      const ext = a.ext as any;
+      return ext?.current_value && a.purchase_price && ext.current_value <= a.purchase_price * 0.1;
+    })
+    .slice(0, 3);
+
+  const renewalSuggestions = (assets ?? [])
+    .filter(a => {
+      if (a.type !== "subscription") return false;
+      const ext = a.ext as any;
+      if (ext?.usage_frequency !== "rarely") return false;
+      if (!ext?.next_billing_date) return false;
+      const daysLeft = Math.ceil((new Date(ext.next_billing_date).getTime() - Date.now()) / 86400000);
+      return daysLeft > 0 && daysLeft <= 7;
+    })
+    .slice(0, 3);
+
+  function getDaysLeft(item: any): number | null {
+    const extRaw = typeof item.ext === "string" ? JSON.parse(item.ext) : item.ext;
+    const date = extRaw?.warranty_expiry ?? extRaw?.expiry_date ?? extRaw?.next_billing_date ?? "";
+    if (!date) return null;
+    const days = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+    return days > 0 ? days : null;
   }
-  const trendData = Array.from(trendMap.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, cost]) => ({ month, cost: Math.round(cost * 100) / 100 }));
+
+  const hasContent = unread > 0
+    || Object.values(expiringByType).some(arr => arr.length > 0)
+    || replacements.length > 0
+    || renewalSuggestions.length > 0;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">仪表盘</h2>
-
-      {/* 数字卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Package className="h-4 w-4" />
-              资产总数
-            </div>
-            <p className="text-2xl font-bold mt-1">{overview?.totalAssets ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 className="h-4 w-4" />
-              供应商
-            </div>
-            <p className="text-2xl font-bold mt-1">{overview?.totalSuppliers ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Package className="h-4 w-4" />
-              资产总值
-            </div>
-            <p className="text-2xl font-bold mt-1">
-              ¥{((overview?.totalValue ?? 0) as number).toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <AlertTriangle className="h-4 w-4" />
-              即将到期
-            </div>
-            <p className="text-2xl font-bold mt-1">{health?.expiringAssets ?? 0}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 图表区域 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* 资产类型分布 */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">资产类型分布</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {byType.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={byType}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={({ name, value }) => `${name} ${value}`}
-                  >
-                    {byType.map((entry: any, i: number) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-10">暂无数据</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 资产状态分布 */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">资产状态分布</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {byStatus.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={byStatus}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={({ name, value }) => `${name} ${value}`}
-                  >
-                    {byStatus.map((entry: any, i: number) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-10">暂无数据</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 订阅月费用趋势 */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">订阅月费用趋势</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {trendData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip formatter={(v: number) => `¥${v.toLocaleString()}`} />
-                <Line
-                  type="monotone"
-                  dataKey="cost"
-                  name="月费用"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-10">暂无订阅数据</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 未读提醒 */}
-      {health && health.unreadNotifications > 0 && (
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-sm">
-              <Bell className="h-4 w-4 text-amber-500" />
-              <span>你有 {health.unreadNotifications} 条未读提醒</span>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-3">
+      {unread > 0 && (
+        <button
+          onClick={() => navigate("/notifications")}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-[rgba(231,76,60,.08)] border border-[rgba(231,76,60,.2)] text-sm hover:bg-[rgba(231,76,60,.12)] transition-colors"
+        >
+          <Bell className="h-3.5 w-3.5 text-wrn shrink-0" />
+          <span className="text-wrn font-mono font-semibold">{unread}</span>
+          <span className="text-ink2 text-xs">条未读提醒</span>
+        </button>
       )}
+
+      {(["physical", "digital", "subscription"] as const).map(type => {
+        const items = expiringByType[type];
+        if (items.length === 0) return null;
+        return (
+          <div key={type} className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs text-ink2">
+              <AlertTriangle className="h-3 w-3" style={{ color: TYPE_COLORS[type] }} />
+              <span>{TYPE_LABELS[type]}即将到期</span>
+            </div>
+            {items.map((item: any) => {
+              const daysLeft = getDaysLeft(item);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(`/assets/${item.id}`)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-pg border border-ink3 hover:bg-[rgba(44,36,24,.04)] transition-colors text-left"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: TYPE_COLORS[item.type] }} />
+                    <span className="text-xs text-ink truncate">{item.name}</span>
+                  </div>
+                  {daysLeft !== null && (
+                    <span className="text-[10px] font-mono shrink-0" style={{ color: TYPE_COLORS[type] }}>{daysLeft}天</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      {renewalSuggestions.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-ink2">
+            <RefreshCw className="h-3 w-3 text-sub" />
+            <span>续费建议</span>
+          </div>
+          {renewalSuggestions.map((item: any) => (
+            <button
+              key={item.id}
+              onClick={() => navigate(`/assets/${item.id}`)}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-pg border border-ink3 hover:bg-[rgba(44,36,24,.04)] transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "var(--color-sub)" }} />
+                <span className="text-xs text-ink truncate">{item.name}</span>
+              </div>
+              <span className="text-[10px] font-mono text-sub shrink-0">考虑取消</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {replacements.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-ink2">
+            <TrendingDown className="h-3 w-3 text-phy" />
+            <span>替换建议</span>
+          </div>
+          {replacements.map((item: any) => (
+            <button
+              key={item.id}
+              onClick={() => navigate(`/assets/${item.id}`)}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-pg border border-ink3 hover:bg-[rgba(44,36,24,.04)] transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "var(--color-phy)" }} />
+                <span className="text-xs text-ink truncate">{item.name}</span>
+              </div>
+              <span className="text-[10px] font-mono text-phy shrink-0">低残值</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!hasContent && (
+        <div className="text-center py-4">
+          <p className="text-xs text-ink3">暂无提醒或建议</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TypeDistribution() {
+  const navigate = useNavigate();
+  const { data: overview } = useDashboardOverview();
+
+  const byType = overview?.byType ?? [];
+  const total = byType.reduce((sum: number, t: any) => sum + t.count, 0) || 1;
+
+  const segments = (["physical", "digital", "subscription"] as const).map(type => {
+    const item = byType.find((t: any) => t.type === type);
+    const count = item?.count ?? 0;
+    return { type, count, pct: Math.round((count / total) * 100) };
+  });
+
+  return (
+    <div className="bg-pg border-[1.5px] border-ink3 rounded-lg px-4 py-3">
+      <div className="flex items-center gap-4">
+        {/* Stacked bar */}
+        <div className="flex-1 flex h-3 rounded-full overflow-hidden bg-ink3/30">
+          {segments.map(s => (
+            <button
+              key={s.type}
+              onClick={() => navigate(`/assets?type=${s.type}`)}
+              className="transition-all hover:brightness-110"
+              style={{ width: `${s.pct}%`, backgroundColor: TYPE_COLORS[s.type] }}
+              title={`${TYPE_LABELS[s.type]} ${s.count}项 ${s.pct}%`}
+            />
+          ))}
+        </div>
+        {/* Labels */}
+        <div className="flex items-center gap-3 shrink-0">
+          {segments.map(s => (
+            <button
+              key={s.type}
+              onClick={() => navigate(`/assets?type=${s.type}`)}
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            >
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TYPE_COLORS[s.type] }} />
+              <span className="font-mono text-[11px] text-ink2">{TYPE_LABELS[s.type]}</span>
+              <span className="font-mono text-[11px] font-semibold" style={{ color: TYPE_COLORS[s.type] }}>{s.pct}%</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MonthlyExpirySummary({ events }: { events: { date: string; type: string }[] }) {
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { physical: 0, digital: 0, subscription: 0 };
+    for (const e of events) {
+      if (e.date.startsWith(thisMonth)) {
+        c[e.type] = (c[e.type] ?? 0) + 1;
+      }
+    }
+    return c;
+  }, [events, thisMonth]);
+
+  const total = Object.values(counts).reduce((s, v) => s + v, 0);
+  if (total === 0) return null;
+
+  return (
+    <div className="flex items-center gap-2 px-2 text-[11px] text-ink2">
+      <span>本月到期</span>
+      {(["physical", "digital", "subscription"] as const).map(type => (
+        <span key={type} className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: TYPE_COLORS[type] }} />
+          <span className="font-mono font-semibold" style={{ color: TYPE_COLORS[type] }}>{counts[type]}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Dashboard() {
+  const navigate = useNavigate();
+  const { data: overview } = useDashboardOverview();
+  const { data: health } = useHealthOverview();
+  const { data: subscription } = useSubscriptionSummary();
+  const { data: assets } = useAssets();
+
+  const activeCount = (overview?.byStatus ?? []).find((item: any) => item.status === "active")?.count ?? 0;
+
+  const stats = [
+    { label: "资产总数", value: String(overview?.totalAssets ?? 0), color: "var(--color-phy)", href: "/assets" },
+    { label: "资产总值", value: `¥${((overview?.totalValue ?? 0) as number).toLocaleString()}`, color: "var(--color-dig)", href: "/assets" },
+    { label: "即将到期", value: String(health?.expiringAssets ?? 0), color: "var(--color-wrn)", href: "/notifications" },
+    { label: "供应商", value: String(overview?.totalSuppliers ?? 0), color: "var(--color-sub)", href: "/suppliers" },
+    { label: "使用中", value: String(activeCount), color: "#4a9e6e", href: "/assets?status=active" },
+    { label: "订阅月费", value: `¥${(subscription?.monthlyTotal ?? 0).toLocaleString()}`, color: "var(--color-sub)", href: "/assets?type=subscription" },
+  ];
+
+  const calendarEvents = (health?.expiringDetails ?? []).map((d: any) => {
+    const extRaw = typeof d.ext === "string" ? JSON.parse(d.ext) : d.ext;
+    const date = extRaw?.warranty_expiry ?? extRaw?.expiry_date ?? extRaw?.next_billing_date ?? "";
+    return { date, type: d.type };
+  }).filter((e: any) => e.date);
+
+  return (
+    <div className="space-y-5">
+      <h2 className="font-display text-xl font-bold tracking-[2px] uppercase">仪表盘</h2>
+
+      {/* Stats strip — 6-cell grid */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-px bg-ink4 rounded-[10px] overflow-hidden border border-ink3">
+        {stats.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => navigate(s.href)}
+            className="flex flex-col items-center justify-center bg-pg py-3.5 px-2 hover:bg-[rgba(44,36,24,0.04)] transition-colors"
+          >
+            <span className="font-mono text-xl font-semibold" style={{ color: s.color }}>
+              {s.value}
+            </span>
+            <span className="text-[10px] text-ink2 mt-1 tracking-wide">{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Type distribution bar */}
+      <TypeDistribution />
+
+      {/* Calendar + Reminders | Gantt timeline */}
+      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-5 items-stretch">
+        {/* Left column: Calendar + Monthly summary + Reminders */}
+        <div className="flex flex-col gap-4">
+          <MiniCalendar events={calendarEvents} />
+          <MonthlyExpirySummary events={calendarEvents} />
+          <div className="relative bg-pg border-[1.5px] border-ink3 rounded-lg p-3.5 min-h-[360px]">
+            <span className="absolute -top-2 left-3.5 font-mono text-[8px] tracking-[2px] text-ink2 bg-pg px-1.5">
+              INSET — REMINDERS & SUGGESTIONS
+            </span>
+            <ReminderPanel />
+          </div>
+        </div>
+
+        {/* Right column: Gantt timeline */}
+        <div>
+          <GanttTimeline assets={assets ?? []} />
+        </div>
+      </div>
     </div>
   );
 }

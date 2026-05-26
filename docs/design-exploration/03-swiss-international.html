@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Swiss International Style</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --red: #FF0000;
+    --black: #000000;
+    --white: #FFFFFF;
+    --gray-200: #E5E5E5;
+    --gray-400: #999999;
+    --gray-600: #666666;
+    --unit: 8px;
+  }
+
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--white);
+    color: var(--black);
+    line-height: 1;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  /* === HEADER === */
+  .header {
+    display: grid;
+    grid-template-columns: 280px 1fr auto;
+    border-bottom: 4px solid var(--black);
+    height: 72px;
+  }
+
+  .brand {
+    background: var(--black);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .brand .red { color: var(--red); }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 0 32px;
+  }
+
+  .header-nav span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    cursor: default;
+  }
+
+  .header-nav span.active {
+    color: var(--black);
+    border-bottom: 3px solid var(--red);
+    padding-bottom: 2px;
+  }
+
+  .header-date {
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray-400);
+    letter-spacing: 0.1em;
+    border-left: 2px solid var(--black);
+  }
+
+  /* === HERO: Total Value === */
+  .hero {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr 1fr;
+    border-bottom: 4px solid var(--black);
+  }
+
+  .hero-label-col {
+    background: var(--black);
+    color: var(--white);
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-label-col .tag {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 12px;
+  }
+
+  .hero-label-col .big-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+
+  .hero-label-col .big-number .yen {
+    font-size: 32px;
+    letter-spacing: 0;
+    color: var(--red);
+  }
+
+  .hero-label-col .sub {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #888;
+    margin-top: 12px;
+  }
+
+  .hero-stat {
+    padding: 40px 32px;
+    border-right: 2px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero-stat:last-child { border-right: none; }
+
+  .hero-stat .label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+  }
+
+  .hero-stat .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .hero-stat .value.red { color: var(--red); }
+
+  /* === ALERT STRIP === */
+  .alert-strip {
+    background: var(--red);
+    color: var(--white);
+    padding: 16px 32px;
+    display: grid;
+    grid-template-columns: 280px 1fr auto;
+    align-items: center;
+  }
+
+  .alert-strip .tag {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .alert-strip .text {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .alert-strip .count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  /* === MAIN 3-COLUMN GRID === */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr 1fr;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: #F5F5F5;
+    border-right: 2px solid var(--gray-200);
+    padding: 32px 24px;
+  }
+
+  .sidebar-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 32px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--black);
+  }
+
+  .sidebar-item {
+    margin-bottom: 28px;
+  }
+
+  .sidebar-item .s-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-bottom: 4px;
+  }
+
+  .sidebar-item .s-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .sidebar-item .s-value.red { color: var(--red); }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--gray-200);
+    margin: 24px 0;
+  }
+
+  /* Content cells */
+  .cell {
+    padding: 32px;
+    border-right: 2px solid var(--gray-200);
+    border-bottom: 2px solid var(--gray-200);
+    min-height: 240px;
+  }
+
+  .cell:nth-child(4n) { border-right: none; }
+
+  .cell-header {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 24px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--black);
+    display: inline-block;
+  }
+
+  /* Type distribution with geometric shapes */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+
+  .type-cell {
+    text-align: center;
+    padding: 20px 12px;
+    border-right: 1px solid var(--gray-200);
+  }
+
+  .type-cell:last-child { border-right: none; }
+
+  .geo {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .geo-square { width: 44px; height: 44px; background: var(--black); }
+  .geo-circle { width: 44px; height: 44px; background: var(--red); border-radius: 50%; }
+  .geo-triangle {
+    width: 0; height: 0;
+    border-left: 24px solid transparent;
+    border-right: 24px solid transparent;
+    border-bottom: 44px solid var(--black);
+  }
+
+  .type-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .type-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  .type-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-top: 4px;
+  }
+
+  /* Status block */
+  .status-center {
+    text-align: center;
+    padding-top: 16px;
+  }
+
+  .status-big {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 80px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -4px;
+  }
+
+  .status-bar-track {
+    height: 8px;
+    background: var(--gray-200);
+    margin-top: 20px;
+  }
+
+  .status-bar-fill {
+    height: 100%;
+    background: var(--black);
+    width: 100%;
+  }
+
+  .status-sub {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  /* Subscription card - inverted */
+  .sub-card {
+    background: var(--black);
+    color: var(--white);
+    margin: -8px;
+    padding: 32px;
+    height: calc(100% + 16px);
+  }
+
+  .sub-amount {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -2px;
+    color: var(--red);
+  }
+
+  .sub-amount .yen { font-size: 28px; }
+
+  .sub-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #888;
+    margin-top: 8px;
+  }
+
+  .sub-detail {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+  }
+
+  .sub-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .sub-row .val {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--red);
+  }
+
+  /* Bar chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 120px;
+    margin-top: 8px;
+  }
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    background: var(--black);
+    min-height: 4px;
+  }
+
+  .bar.red { background: var(--red); }
+
+  .bar-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .bar-lbl {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  /* Health score */
+  .health-center {
+    text-align: center;
+    padding-top: 8px;
+  }
+
+  .health-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+
+  .health-score .pct {
+    font-size: 24px;
+    color: var(--gray-400);
+  }
+
+  .health-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  .health-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .health-item .h-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .health-item .h-val.red { color: var(--red); }
+
+  .health-item .h-lbl {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-top: 4px;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 4px solid var(--black);
+    padding: 16px 32px;
+    display: grid;
+    grid-template-columns: 280px 1fr auto;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #CCC;
+  }
+
+  .footer .red { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="brand">META<span class="red">VAULT</span></div>
+  <div class="header-nav">
+    <span class="active">概览</span>
+    <span>资产</span>
+    <span>供应商</span>
+    <span>提醒</span>
+  </div>
+  <div class="header-date">2026.05.25</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label-col">
+    <div class="tag">资产总值 / Total Value</div>
+    <div class="big-number"><span class="yen">¥</span>5,199</div>
+    <div class="sub">CNY / 人民币</div>
+  </div>
+  <div class="hero-stat">
+    <div class="label">资产总数 / Assets</div>
+    <div class="value">08</div>
+  </div>
+  <div class="hero-stat">
+    <div class="label">供应商 / Suppliers</div>
+    <div class="value">01</div>
+  </div>
+  <div class="hero-stat">
+    <div class="label">即将到期 / Expiring</div>
+    <div class="value red">02</div>
+  </div>
+</div>
+
+<!-- ALERT STRIP -->
+<div class="alert-strip">
+  <div class="tag">Alert</div>
+  <div class="text">2 项资产即将到期 — 需要关注</div>
+  <div class="count">3 条未读</div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">资产总览 / Overview</div>
+    <div class="sidebar-item">
+      <div class="s-label">资产总数</div>
+      <div class="s-value">08</div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-item">
+      <div class="s-label">供应商</div>
+      <div class="s-value">01</div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-item">
+      <div class="s-label">资产总值</div>
+      <div class="s-value red">¥5,199</div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-item">
+      <div class="s-label">即将到期</div>
+      <div class="s-value red">02</div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-item">
+      <div class="s-label">未读提醒</div>
+      <div class="s-value">03</div>
+    </div>
+  </div>
+
+  <!-- Cell: Type Distribution -->
+  <div class="cell">
+    <div class="cell-header">类型分布 / Type Distribution</div>
+    <div class="type-grid">
+      <div class="type-cell">
+        <div class="geo"><div class="geo-square"></div></div>
+        <div class="type-num">05</div>
+        <div class="type-label">物理资产</div>
+        <div class="type-pct">62.5%</div>
+      </div>
+      <div class="type-cell">
+        <div class="geo"><div class="geo-circle"></div></div>
+        <div class="type-num">01</div>
+        <div class="type-label">数字资产</div>
+        <div class="type-pct">12.5%</div>
+      </div>
+      <div class="type-cell">
+        <div class="geo"><div class="geo-triangle"></div></div>
+        <div class="type-num">02</div>
+        <div class="type-label">订阅</div>
+        <div class="type-pct">25.0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell: Usage Status -->
+  <div class="cell">
+    <div class="cell-header">使用状态 / Status</div>
+    <div class="status-center">
+      <div class="status-big">08</div>
+      <div class="status-bar-track"><div class="status-bar-fill"></div></div>
+      <div class="status-sub">使用中 / Active</div>
+    </div>
+  </div>
+
+  <!-- Cell: Subscription -->
+  <div class="cell">
+    <div class="cell-header">订阅费用 / Subscription</div>
+    <div class="sub-card">
+      <div class="sub-amount"><span class="yen">¥</span>298</div>
+      <div class="sub-label">月度订阅费 / Monthly Cost</div>
+      <div class="sub-detail">
+        <div class="sub-row"><span>年化预估</span><span class="val">¥3,576</span></div>
+        <div class="sub-row"><span>订阅数</span><span class="val">02</span></div>
+        <div class="sub-row"><span>占资产总值</span><span class="val">5.7%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell: Value Distribution Chart -->
+  <div class="cell" style="grid-column: 2 / 4">
+    <div class="cell-header">价值分布 / Value Distribution</div>
+    <div class="bar-chart">
+      <div class="bar-col">
+        <div class="bar-val">5</div>
+        <div class="bar" style="height:75%"></div>
+        <div class="bar-lbl">物理</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val">1</div>
+        <div class="bar" style="height:15%"></div>
+        <div class="bar-lbl">数字</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val">2</div>
+        <div class="bar red" style="height:30%"></div>
+        <div class="bar-lbl">订阅</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val">2</div>
+        <div class="bar red" style="height:30%"></div>
+        <div class="bar-lbl">到期</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val">3</div>
+        <div class="bar red" style="height:45%"></div>
+        <div class="bar-lbl">提醒</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-val">8</div>
+        <div class="bar" style="height:100%"></div>
+        <div class="bar-lbl">使用中</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell: Health Score -->
+  <div class="cell">
+    <div class="cell-header">健康度 / Health</div>
+    <div class="health-center">
+      <div class="health-score">75<span class="pct">%</span></div>
+      <div class="health-label">综合评分</div>
+      <div class="health-row">
+        <div class="health-item">
+          <div class="h-val red">2</div>
+          <div class="h-lbl">风险项</div>
+        </div>
+        <div class="health-item">
+          <div class="h-val">8</div>
+          <div class="h-lbl">正常项</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div>META<span class="red">VAULT</span></div>
+  <div>Swiss International Style / Grid System 8px Unit</div>
+  <div>2026.05.25</div>
+</div>
+
+</body>
+</html>

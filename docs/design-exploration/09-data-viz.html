@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Data Visualization Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1A1A2E;
+    --bg-card: #16213E;
+    --bg-card-alt: #0F3460;
+    --border: rgba(255,255,255,0.06);
+    --cyan: #00D4FF;
+    --magenta: #E040FB;
+    --orange: #FF6D00;
+    --green: #00E676;
+    --yellow: #FFD600;
+    --red: #FF1744;
+    --purple: #B388FF;
+    --text: rgba(255,255,255,0.92);
+    --text-dim: rgba(255,255,255,0.45);
+    --text-label: rgba(255,255,255,0.55);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .dashboard {
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .logo-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .logo-name span { color: var(--cyan); }
+  .header-meta {
+    display: flex; gap: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .header-meta .live {
+    color: var(--green);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .header-meta .live::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* KPI strip */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .kpi-cell {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 12px;
+    position: relative;
+  }
+  .kpi-cell::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 12px; right: 12px;
+    height: 2px;
+    border-radius: 1px;
+  }
+  .kpi-cell:nth-child(1)::after { background: var(--cyan); }
+  .kpi-cell:nth-child(2)::after { background: var(--magenta); }
+  .kpi-cell:nth-child(3)::after { background: var(--green); }
+  .kpi-cell:nth-child(4)::after { background: var(--orange); }
+  .kpi-cell:nth-child(5)::after { background: var(--yellow); }
+  .kpi-cell:nth-child(6)::after { background: var(--red); }
+  .kpi-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .kpi-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .kpi-cell:nth-child(1) .kpi-val { color: var(--cyan); }
+  .kpi-cell:nth-child(2) .kpi-val { color: var(--magenta); }
+  .kpi-cell:nth-child(3) .kpi-val { color: var(--green); }
+  .kpi-cell:nth-child(4) .kpi-val { color: var(--orange); }
+  .kpi-cell:nth-child(5) .kpi-val { color: var(--yellow); }
+  .kpi-cell:nth-child(6) .kpi-val { color: var(--red); }
+  .kpi-unit {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: 2px;
+  }
+
+  /* Chart grid */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    position: relative;
+  }
+  .chart-card.wide { grid-column: span 2; }
+
+  .chart-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-label);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chart-title .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+
+  /* Donut chart */
+  .donut-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .donut-wrap {
+    position: relative;
+    width: 140px; height: 140px;
+    flex-shrink: 0;
+  }
+  .donut-svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+  .donut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .donut-center-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+  .donut-center-lbl {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-swatch {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-label { font-size: 12px; color: var(--text-label); flex: 1; }
+  .legend-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .legend-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* Bar chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 140px;
+    padding-top: 10px;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .bar-fill {
+    width: 100%;
+    max-width: 48px;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    min-height: 4px;
+  }
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  }
+  .bar-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Line chart */
+  .line-chart-wrap {
+    position: relative;
+    height: 130px;
+  }
+  .line-chart-svg { width: 100%; height: 130px; }
+  .line-x-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-left: 30px;
+  }
+  .line-x-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* Bottom info row */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  .info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .info-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .info-row-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .info-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .info-item:last-child { border-bottom: none; }
+  .info-item-label { font-size: 12px; color: var(--text-label); }
+  .info-item-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* Horizontal bar */
+  .h-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .h-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  /* Alert list */
+  .alert-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-severity {
+    width: 3px; height: 16px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .alert-severity.critical { background: var(--red); }
+  .alert-severity.warning { background: var(--orange); }
+  .alert-severity.info { background: var(--cyan); }
+  .alert-msg { font-size: 12px; color: var(--text-label); flex: 1; }
+  .alert-eta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+    .chart-grid { grid-template-columns: 1fr; }
+    .chart-card.wide { grid-column: span 1; }
+    .info-row { grid-template-columns: 1fr; }
+    .donut-container { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-mark">MV</div>
+      <div class="logo-name">META<span>VAULT</span></div>
+    </div>
+    <div class="header-meta">
+      <span class="live">LIVE</span>
+      <span>2026-05-25</span>
+      <span>CNY</span>
+    </div>
+  </header>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi-cell">
+      <div class="kpi-label">资产总数</div>
+      <div class="kpi-val">8<span class="kpi-unit">项</span></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-label">供应商</div>
+      <div class="kpi-val">1<span class="kpi-unit">家</span></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-label">资产总值</div>
+      <div class="kpi-val">¥5,199</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-label">即将到期</div>
+      <div class="kpi-val">2<span class="kpi-unit">项</span></div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-label">订阅月费</div>
+      <div class="kpi-val">¥298</div>
+    </div>
+    <div class="kpi-cell">
+      <div class="kpi-label">未读提醒</div>
+      <div class="kpi-val">3<span class="kpi-unit">条</span></div>
+    </div>
+  </div>
+
+  <!-- Chart Grid -->
+  <div class="chart-grid">
+    <!-- Donut: Asset Distribution -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <div class="dot" style="background:var(--cyan)"></div>
+        资产类型分布
+      </div>
+      <div class="donut-container">
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 140 140">
+            <!-- circumference=2*pi*55=345.6; Physical 62.5%=216, Digital 12.5%=43.2, Sub 25%=86.4 -->
+            <circle cx="70" cy="70" r="55" fill="none" stroke="rgba(0,212,255,0.15)" stroke-width="18"/>
+            <circle cx="70" cy="70" r="55" fill="none" stroke="#00D4FF" stroke-width="18"
+              stroke-dasharray="216 346" stroke-dashoffset="0"/>
+            <circle cx="70" cy="70" r="55" fill="none" stroke="#B388FF" stroke-width="18"
+              stroke-dasharray="43.2 346" stroke-dashoffset="-216"/>
+            <circle cx="70" cy="70" r="55" fill="none" stroke="#FF6D00" stroke-width="18"
+              stroke-dasharray="86.4 346" stroke-dashoffset="-259.2"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-center-val">8</div>
+            <div class="donut-center-lbl">TOTAL</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#00D4FF"></div>
+            <span class="legend-label">物理资产</span>
+            <span class="legend-value" style="color:#00D4FF">5</span>
+            <span class="legend-pct">62.5%</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#B388FF"></div>
+            <span class="legend-label">数字资产</span>
+            <span class="legend-value" style="color:#B388FF">1</span>
+            <span class="legend-pct">12.5%</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#FF6D00"></div>
+            <span class="legend-label">订阅服务</span>
+            <span class="legend-value" style="color:#FF6D00">2</span>
+            <span class="legend-pct">25.0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar Chart: Asset Value by Type -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <div class="dot" style="background:var(--green)"></div>
+        各类资产价值 (CNY)
+      </div>
+      <div class="bar-chart">
+        <div class="bar-col">
+          <div class="bar-value" style="color:#00D4FF">¥3,800</div>
+          <div class="bar-fill" style="height:73%;background:linear-gradient(180deg,#00D4FF,#006688)"></div>
+          <div class="bar-label">物理</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value" style="color:#B388FF">¥901</div>
+          <div class="bar-fill" style="height:17%;background:linear-gradient(180deg,#B388FF,#5C3D7A)"></div>
+          <div class="bar-label">数字</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-value" style="color:#FF6D00">¥498</div>
+          <div class="bar-fill" style="height:10%;background:linear-gradient(180deg,#FF6D00,#883B00)"></div>
+          <div class="bar-label">订阅</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donut: Usage Status -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <div class="dot" style="background:var(--green)"></div>
+        使用状态
+      </div>
+      <div class="donut-container">
+        <div class="donut-wrap">
+          <svg class="donut-svg" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="55" fill="none" stroke="rgba(0,230,118,0.15)" stroke-width="18"/>
+            <!-- In use: 8/8 = 100% => full circle -->
+            <circle cx="70" cy="70" r="55" fill="none" stroke="#00E676" stroke-width="18"
+              stroke-dasharray="346 346" stroke-dashoffset="0"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-center-val" style="color:#00E676">8</div>
+            <div class="donut-center-lbl">IN USE</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#00E676"></div>
+            <span class="legend-label">使用中</span>
+            <span class="legend-value" style="color:#00E676">8</span>
+            <span class="legend-pct">100%</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:rgba(255,255,255,0.1)"></div>
+            <span class="legend-label">闲置</span>
+            <span class="legend-value" style="color:var(--text-dim)">0</span>
+            <span class="legend-pct">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line Chart: Monthly Subscription Cost (wide) -->
+    <div class="chart-card wide">
+      <div class="chart-title">
+        <div class="dot" style="background:var(--orange)"></div>
+        订阅月费趋势 (CNY) — 近6月
+      </div>
+      <div class="line-chart-wrap">
+        <svg class="line-chart-svg" viewBox="0 0 600 130" preserveAspectRatio="none">
+          <!-- Grid lines -->
+          <line x1="30" y1="10" x2="590" y2="10" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="30" y1="40" x2="590" y2="40" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="30" y1="70" x2="590" y2="70" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="30" y1="100" x2="590" y2="100" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <!-- Area fill -->
+          <polygon points="30,100 142,100 254,85 366,85 478,70 590,70 590,120 30,120"
+            fill="url(#areaGrad)" opacity="0.3"/>
+          <!-- Line -->
+          <polyline points="30,100 142,100 254,85 366,85 478,70 590,70"
+            fill="none" stroke="#FF6D00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Data points -->
+          <circle cx="30"  cy="100" r="4" fill="#1A1A2E" stroke="#FF6D00" stroke-width="2"/>
+          <circle cx="142" cy="100" r="4" fill="#1A1A2E" stroke="#FF6D00" stroke-width="2"/>
+          <circle cx="254" cy="85"  r="4" fill="#1A1A2E" stroke="#FF6D00" stroke-width="2"/>
+          <circle cx="366" cy="85"  r="4" fill="#1A1A2E" stroke="#FF6D00" stroke-width="2"/>
+          <circle cx="478" cy="70"  r="4" fill="#1A1A2E" stroke="#FF6D00" stroke-width="2"/>
+          <circle cx="590" cy="70"  r="5" fill="#FF6D00" stroke="#1A1A2E" stroke-width="2"/>
+          <!-- Value labels -->
+          <text x="30"  y="92" text-anchor="middle" fill="#FF6D00" font-family="JetBrains Mono" font-size="10" font-weight="600">¥0</text>
+          <text x="142" y="92" text-anchor="middle" fill="#FF6D00" font-family="JetBrains Mono" font-size="10" font-weight="600">¥0</text>
+          <text x="254" y="77" text-anchor="middle" fill="#FF6D00" font-family="JetBrains Mono" font-size="10" font-weight="600">¥198</text>
+          <text x="366" y="77" text-anchor="middle" fill="#FF6D00" font-family="JetBrains Mono" font-size="10" font-weight="600">¥198</text>
+          <text x="478" y="62" text-anchor="middle" fill="#FF6D00" font-family="JetBrains Mono" font-size="10" font-weight="600">¥298</text>
+          <text x="590" y="62" text-anchor="middle" fill="#FF6D00" font-family="JetBrains Mono" font-size="10" font-weight="600">¥298</text>
+          <defs>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FF6D00" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#FF6D00" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="line-x-labels">
+        <span class="line-x-label">12月</span>
+        <span class="line-x-label">1月</span>
+        <span class="line-x-label">2月</span>
+        <span class="line-x-label">3月</span>
+        <span class="line-x-label">4月</span>
+        <span class="line-x-label">5月</span>
+      </div>
+    </div>
+
+    <!-- Mini: Subscription Breakdown -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <div class="dot" style="background:var(--yellow)"></div>
+        订阅明细
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:12px;color:var(--text-label)">iCloud+ 200GB</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--cyan)">¥21/月</span>
+          </div>
+          <div class="h-bar-wrap"><div class="h-bar-fill" style="width:7%;background:var(--cyan)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:12px;color:var(--text-label)">Adobe Creative Cloud</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--magenta)">¥277/月</span>
+          </div>
+          <div class="h-bar-wrap"><div class="h-bar-fill" style="width:93%;background:var(--magenta)"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+          <span style="font-size:11px;color:var(--text-dim)">合计</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--orange)">¥298/月</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;color:var(--text-dim)">年化</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text)">¥3,576</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Info Row -->
+  <div class="info-row">
+    <!-- Asset Health -->
+    <div class="info-card">
+      <div class="info-title">资产健康度</div>
+      <div class="info-row-items">
+        <div class="info-item">
+          <span class="info-item-label">使用率</span>
+          <span class="info-item-value" style="color:var(--green)">100%</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-label">即将到期</span>
+          <span class="info-item-value" style="color:var(--red)">2 项</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-label">续费预警</span>
+          <span class="info-item-value" style="color:var(--orange)">7天内</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-label">健康评分</span>
+          <span class="info-item-value" style="color:var(--green)">85/100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supplier -->
+    <div class="info-card">
+      <div class="info-title">供应商概览</div>
+      <div class="info-row-items">
+        <div class="info-item">
+          <span class="info-item-label">供应商总数</span>
+          <span class="info-item-value" style="color:var(--magenta)">1</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-label">已收藏</span>
+          <span class="info-item-value" style="color:var(--yellow)">1</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-label">关联资产</span>
+          <span class="info-item-value" style="color:var(--cyan)">8</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-label">评价待完成</span>
+          <span class="info-item-value" style="color:var(--orange)">1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="info-card">
+      <div class="info-title">未读提醒 (3)</div>
+      <div class="alert-row">
+        <div class="alert-severity critical"></div>
+        <span class="alert-msg">Adobe CC 即将到期</span>
+        <span class="alert-eta">3天后</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-severity warning"></div>
+        <span class="alert-msg">iCloud+ 续费提醒</span>
+        <span class="alert-eta">7天后</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-severity info"></div>
+        <span class="alert-msg">新供应商评价待完成</span>
+        <span class="alert-eta">今天</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

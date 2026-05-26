@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Organic Nature</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --forest: #2D5F2D;
+    --forest-light: #4A8C4A;
+    --earth: #8B6F47;
+    --earth-light: #B89A6F;
+    --terracotta: #C67B5C;
+    --terracotta-light: #E8A889;
+    --sand: #F5EDE0;
+    --sand-light: #FAF6F0;
+    --moss: #7A9E7E;
+    --moss-light: #A8C8AC;
+    --bark: #5C4033;
+    --warm-white: #FEFCF8;
+    --text: #3D2B1F;
+    --text-muted: #8B7D6B;
+    --leaf-shadow: rgba(45, 95, 45, 0.08);
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--sand-light);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Organic background shapes */
+  .bg-organic {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-organic-1 {
+    top: -100px; right: -80px;
+    width: 400px; height: 400px;
+    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+    background: radial-gradient(circle at 40% 40%, rgba(74, 140, 74, 0.06), transparent 70%);
+    animation: breathe1 16s ease-in-out infinite;
+  }
+  .bg-organic-2 {
+    bottom: -80px; left: -60px;
+    width: 350px; height: 350px;
+    border-radius: 50% 60% 40% 50% / 40% 50% 60% 50%;
+    background: radial-gradient(circle at 60% 40%, rgba(198, 123, 92, 0.06), transparent 70%);
+    animation: breathe2 20s ease-in-out infinite;
+  }
+  @keyframes breathe1 {
+    0%, 100% { transform: scale(1) rotate(0deg); border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; }
+    50% { transform: scale(1.05) rotate(3deg); border-radius: 50% 50% 40% 60% / 60% 40% 50% 50%; }
+  }
+  @keyframes breathe2 {
+    0%, 100% { transform: scale(1) rotate(0deg); border-radius: 50% 60% 40% 50% / 40% 50% 60% 50%; }
+    50% { transform: scale(1.03) rotate(-2deg); border-radius: 40% 50% 60% 50% / 50% 40% 50% 60%; }
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, var(--warm-white), var(--sand-light));
+    border-bottom: 1px solid rgba(139, 111, 71, 0.1);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-leaf {
+    width: 44px; height: 44px;
+    position: relative;
+  }
+  .logo-leaf svg { width: 100%; height: 100%; }
+
+  .logo-text {
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--forest);
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--earth); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .alert-seed {
+    background: var(--terracotta-light);
+    color: var(--terracotta);
+    padding: 6px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .alert-seed svg { width: 14px; height: 14px; }
+
+  .nav-btn {
+    padding: 8px 20px;
+    border-radius: 28px;
+    border: 1.5px solid rgba(139, 111, 71, 0.15);
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .nav-btn:hover {
+    background: var(--forest);
+    color: white;
+    border-color: var(--forest);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(45, 95, 45, 0.2);
+  }
+  .nav-btn.active {
+    background: var(--forest);
+    color: white;
+    border-color: var(--forest);
+  }
+
+  /* MAIN */
+  main {
+    position: relative;
+    z-index: 10;
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title svg {
+    width: 20px; height: 20px;
+    fill: var(--forest-light);
+  }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--warm-white);
+    border-radius: 28px;
+    padding: 24px;
+    box-shadow: 0 2px 16px var(--leaf-shadow);
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(45, 95, 45, 0.12);
+  }
+  /* Leaf decoration */
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: -8px; right: -8px;
+    width: 50px; height: 50px;
+    opacity: 0.06;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cpath d='M25 5 C35 10, 45 25, 25 45 C5 25, 15 10, 25 5Z' fill='%232D5F2D'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+  }
+
+  .stat-icon-wrap {
+    width: 48px; height: 48px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+  .stat-card:nth-child(1) .stat-icon-wrap { background: rgba(45, 95, 45, 0.08); }
+  .stat-card:nth-child(2) .stat-icon-wrap { background: rgba(139, 111, 71, 0.08); }
+  .stat-card:nth-child(3) .stat-icon-wrap { background: rgba(198, 123, 92, 0.08); }
+  .stat-card:nth-child(4) .stat-icon-wrap { background: rgba(122, 158, 126, 0.08); }
+
+  .stat-icon-wrap svg { width: 24px; height: 24px; }
+
+  .stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: 'Lora', serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-card:nth-child(1) .stat-value { color: var(--forest); }
+  .stat-card:nth-child(2) .stat-value { color: var(--earth); }
+  .stat-card:nth-child(3) .stat-value { color: var(--terracotta); }
+  .stat-card:nth-child(4) .stat-value { color: var(--moss); }
+
+  /* MIDDLE ROW */
+  .middle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .panel {
+    background: var(--warm-white);
+    border-radius: 32px;
+    padding: 28px;
+    box-shadow: 0 2px 16px var(--leaf-shadow);
+    position: relative;
+  }
+
+  /* TYPE DISTRIBUTION - organic circles */
+  .type-garden {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 24px;
+    padding: 24px 0 0;
+  }
+  .type-plant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .type-stem {
+    width: 2px;
+    background: var(--moss-light);
+    transition: height 0.5s;
+  }
+  .type-plant:nth-child(1) .type-stem { height: 20px; }
+  .type-plant:nth-child(2) .type-stem { height: 10px; }
+  .type-plant:nth-child(3) .type-stem { height: 16px; }
+
+  .type-circle {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 700;
+    transition: all 0.4s;
+    cursor: default;
+    position: relative;
+  }
+  .type-circle:hover { transform: scale(1.08); }
+
+  .type-circle.physical {
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, rgba(45, 95, 45, 0.12), rgba(74, 140, 74, 0.08));
+    border: 2px solid rgba(45, 95, 45, 0.25);
+    color: var(--forest);
+  }
+  .type-circle.digital {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, rgba(139, 111, 71, 0.12), rgba(184, 154, 111, 0.08));
+    border: 2px solid rgba(139, 111, 71, 0.25);
+    color: var(--earth);
+    font-size: 18px;
+  }
+  .type-circle.subscription {
+    width: 68px; height: 68px;
+    background: linear-gradient(135deg, rgba(198, 123, 92, 0.12), rgba(232, 168, 137, 0.08));
+    border: 2px solid rgba(198, 123, 92, 0.25);
+    color: var(--terracotta);
+    font-size: 20px;
+  }
+
+  /* Small leaf on top of circles */
+  .type-circle::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    width: 14px; height: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M7 1 C10 3, 13 7, 7 13 C1 7, 4 3, 7 1Z' fill='%237A9E7E' opacity='0.5'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+  }
+
+  .type-plant-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  /* Ground line */
+  .ground-line {
+    width: 80%;
+    height: 2px;
+    margin: 8px auto 0;
+    background: linear-gradient(90deg, transparent, var(--moss-light), transparent);
+    border-radius: 1px;
+  }
+
+  /* STATUS - tree ring */
+  .status-tree {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-top: 16px;
+  }
+  .tree-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tree-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid rgba(74, 140, 74, 0.15);
+  }
+  .tree-ring::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 140, 74, 0.2);
+  }
+  .tree-ring-inner {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(45, 95, 45, 0.1), rgba(74, 140, 74, 0.05));
+    border: 2px solid rgba(45, 95, 45, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tree-ring-value {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--forest);
+  }
+
+  .status-detail {
+    flex: 1;
+  }
+  .status-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 4px;
+  }
+  .status-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .status-bar-track {
+    height: 10px;
+    background: rgba(45, 95, 45, 0.08);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .status-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--forest-light), var(--moss));
+    border-radius: 5px;
+    position: relative;
+  }
+  .status-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+
+  /* TREND */
+  .trend-panel {
+    background: var(--warm-white);
+    border-radius: 32px;
+    padding: 28px;
+    box-shadow: 0 2px 16px var(--leaf-shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Decorative leaf */
+  .trend-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; right: -20px;
+    width: 100px; height: 100px;
+    opacity: 0.04;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 C70 20, 90 50, 50 90 C10 50, 30 20, 50 10Z' fill='%232D5F2D'/%3E%3Cpath d='M50 30 L50 80' stroke='%232D5F2D' stroke-width='1.5' fill='none'/%3E%3Cpath d='M50 45 L35 35' stroke='%232D5F2D' stroke-width='1' fill='none'/%3E%3Cpath d='M50 55 L65 45' stroke='%232D5F2D' stroke-width='1' fill='none'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+  }
+
+  .trend-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .trend-value {
+    font-family: 'Lora', serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--forest);
+    line-height: 1;
+  }
+  .trend-period {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding-bottom: 6px;
+  }
+
+  .trend-chart {
+    height: 140px;
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    padding: 0 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .chart-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-bar-wrap {
+    width: 100%;
+    max-width: 56px;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+  }
+  .chart-bar {
+    width: 100%;
+    border-radius: 16px 16px 8px 8px;
+    transition: all 0.4s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .chart-bar.s1 { background: linear-gradient(180deg, var(--forest-light), var(--moss-light)); }
+  .chart-bar.s2 { background: linear-gradient(180deg, var(--earth-light), var(--sand)); }
+  .chart-bar.s3 { background: linear-gradient(180deg, var(--terracotta-light), var(--sand-light)); }
+  .chart-bar.s4 { background: linear-gradient(180deg, var(--moss-light), var(--sand)); }
+  .chart-bar.s5 { background: linear-gradient(180deg, var(--forest), var(--forest-light)); }
+
+  .chart-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .chart-bar:hover {
+    transform: scaleY(1.06);
+    transform-origin: bottom;
+    box-shadow: 0 4px 16px rgba(45, 95, 45, 0.15);
+  }
+
+  .chart-bar-value {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Lora', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .chart-bar:hover .chart-bar-value { opacity: 1; }
+
+  .chart-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  /* Leaf SVG decorations */
+  .leaf-deco {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.04;
+  }
+  .leaf-deco svg { width: 100%; height: 100%; }
+  .leaf-1 { top: 20%; right: 5%; width: 60px; height: 60px; transform: rotate(30deg); }
+  .leaf-2 { bottom: 15%; left: 3%; width: 40px; height: 40px; transform: rotate(-20deg); }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 10;
+    padding: 16px 32px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(139, 111, 71, 0.3);
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid rgba(139, 111, 71, 0.08);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .middle-row { grid-template-columns: 1fr; }
+    .stat-value { font-size: 24px; }
+    .trend-value { font-size: 32px; }
+    header { padding: 16px; flex-wrap: wrap; gap: 12px; }
+    main { padding: 20px; }
+    .type-garden { gap: 16px; }
+    .type-circle.physical { width: 72px; height: 72px; font-size: 18px; }
+    .type-circle.subscription { width: 56px; height: 56px; font-size: 16px; }
+    .status-tree { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-organic bg-organic-1"></div>
+<div class="bg-organic bg-organic-2"></div>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-leaf">
+      <svg viewBox="0 0 44 44" fill="none">
+        <path d="M22 4 C32 10, 40 22, 22 40 C4 22, 12 10, 22 4Z" fill="#2D5F2D" opacity="0.2" stroke="#2D5F2D" stroke-width="1.5"/>
+        <path d="M22 12 L22 34" stroke="#4A8C4A" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M22 18 L15 13" stroke="#4A8C4A" stroke-width="1" stroke-linecap="round"/>
+        <path d="M22 24 L29 19" stroke="#4A8C4A" stroke-width="1" stroke-linecap="round"/>
+        <path d="M22 28 L14 24" stroke="#7A9E7E" stroke-width="0.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="logo-text">Meta<span>Vault</span></div>
+  </div>
+  <div class="header-right">
+    <div class="alert-seed">
+      <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="6"/></svg>
+      3 未读提醒
+    </div>
+    <button class="nav-btn active">资产</button>
+    <button class="nav-btn">供应商</button>
+    <button class="nav-btn">设置</button>
+  </div>
+</header>
+
+<main>
+  <div class="leaf-deco leaf-1">
+    <svg viewBox="0 0 60 60"><path d="M30 5 C45 12, 55 30, 30 55 C5 30, 15 12, 30 5Z" fill="#2D5F2D"/></svg>
+  </div>
+  <div class="leaf-deco leaf-2">
+    <svg viewBox="0 0 40 40"><path d="M20 3 C28 8, 36 20, 20 37 C4 20, 12 8, 20 3Z" fill="#2D5F2D"/></svg>
+  </div>
+
+  <div class="section-title">
+    <svg viewBox="0 0 20 20"><path d="M10 2 C14 5, 18 10, 10 18 C2 10, 6 5, 10 2Z"/></svg>
+    资产概览
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2D5F2D" stroke-width="1.8" stroke-linecap="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/>
+        </svg>
+      </div>
+      <div class="stat-label">资产总数</div>
+      <div class="stat-value">8</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8B6F47" stroke-width="1.8" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <path d="M9 22V12h6v10"/>
+        </svg>
+      </div>
+      <div class="stat-label">供应商</div>
+      <div class="stat-value">1</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C67B5C" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div class="stat-label">资产总值</div>
+      <div class="stat-value">¥5,199</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7A9E7E" stroke-width="1.8" stroke-linecap="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="stat-label">即将到期</div>
+      <div class="stat-value">2</div>
+    </div>
+  </div>
+
+  <div class="middle-row">
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 20 20"><path d="M10 2 C14 5, 18 10, 10 18 C2 10, 6 5, 10 2Z"/></svg>
+        资产类型分布
+      </div>
+      <div class="type-garden">
+        <div class="type-plant">
+          <div class="type-circle physical">5</div>
+          <div class="type-stem"></div>
+          <div class="type-plant-label">物理资产</div>
+        </div>
+        <div class="type-plant">
+          <div class="type-circle subscription">2</div>
+          <div class="type-stem"></div>
+          <div class="type-plant-label">订阅</div>
+        </div>
+        <div class="type-plant">
+          <div class="type-circle digital">1</div>
+          <div class="type-stem"></div>
+          <div class="type-plant-label">数字资产</div>
+        </div>
+      </div>
+      <div class="ground-line"></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-title">
+        <svg viewBox="0 0 20 20"><path d="M10 2 C14 5, 18 10, 10 18 C2 10, 6 5, 10 2Z"/></svg>
+        资产状态
+      </div>
+      <div class="status-tree">
+        <div class="tree-ring">
+          <div class="tree-ring-inner">
+            <div class="tree-ring-value">8</div>
+          </div>
+        </div>
+        <div class="status-detail">
+          <div class="status-label">使用中</div>
+          <div class="status-desc">所有资产均处于活跃状态，无需关注</div>
+          <div class="status-bar-track">
+            <div class="status-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trend-panel">
+    <div class="section-title">
+      <svg viewBox="0 0 20 20"><path d="M10 2 C14 5, 18 10, 10 18 C2 10, 6 5, 10 2Z"/></svg>
+      订阅月费用趋势
+    </div>
+    <div class="trend-header">
+      <div class="trend-value">¥298</div>
+      <div class="trend-period">2026年5月</div>
+    </div>
+    <div class="trend-chart" id="trendChart"></div>
+  </div>
+</main>
+
+<footer>
+  <span>MetaVault v0.5</span>
+  <span>Organic Nature Design</span>
+</footer>
+
+<script>
+  const months = ['1月','2月','3月','4月','5月'];
+  const values = [180, 220, 245, 268, 298];
+  const maxVal = Math.max(...values);
+  const chartEl = document.getElementById('trendChart');
+  const styleClasses = ['s1','s2','s3','s4','s5'];
+
+  values.forEach((v, i) => {
+    const col = document.createElement('div');
+    col.className = 'chart-col';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-bar-wrap';
+
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar ' + styleClasses[i];
+    bar.style.height = (v / maxVal * 88) + '%';
+
+    const val = document.createElement('div');
+    val.className = 'chart-bar-value';
+    val.textContent = '¥' + v;
+    bar.appendChild(val);
+
+    wrap.appendChild(bar);
+
+    const label = document.createElement('div');
+    label.className = 'chart-label';
+    label.textContent = months[i];
+
+    col.appendChild(wrap);
+    col.appendChild(label);
+    chartEl.appendChild(col);
+  });
+</script>
+</body>
+</html>

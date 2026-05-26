@@ -18,16 +18,20 @@
 - 资产关联（depends_on / contains / bound_to / related_to）
 - 提醒系统（8 种类型，启动时 + 每小时自动扫描）
 - Web Push 通知（VAPID，浏览器推送）
-- 统计仪表盘（总览 / 订阅费用 / 健康度 + Recharts 图表）
+- 统计仪表盘（总览 / 订阅费用 / 健康度 + Recharts 图表，卡片和饼图可点击跳转）
 - 数据导入（CSV / Excel，字段映射 + 预览）
 - 数据导出（Excel 格式导出资产和供应商数据）
-- 全局搜索（Header 搜索栏驱动资产列表筛选）
+- 全局搜索（Header 搜索栏驱动资产列表筛选）+ URL 参数筛选（?type=&status=&sort=&q=）
 - 通知页面（未读/全部筛选，批量已读/忽略）
 - 订阅截图上传 + OCR 识别（tesseract.js）
+- 资产列表排序（名称/价格/创建时间/更新时间）
+- 深色模式（ThemeProvider + 切换按钮）
 - 移动端适配（<768px 底部 Tab，>=768px 侧边栏）
 - 删除资产关联影响提示
 - 数字资产使用追踪（标记已使用）
 - 采购建议（收藏供应商推荐、续费决策、折旧替换建议）
+- 服务端输入校验（必填字段、枚举值、UUID 格式）
+- ErrorBoundary 全局错误边界
 
 ## 快速开始
 
@@ -67,7 +71,7 @@ server/           Node.js 后端
     db/           数据库初始化（init.sql + init.ts）
     routes/       REST API 路由（assets / suppliers / relations / notifications / import / dashboard / export）
     services/     提醒扫描 + OCR识别 + Web Push服务
-    middleware/    错误处理
+    middleware/    输入校验 + 错误处理
 e2e/              Playwright E2E 测试
   fixtures/       测试夹具（DB重置 + 种子数据）
   helpers/        测试辅助工具

@@ -201,7 +201,9 @@ client/src/
 │   ├── useNotifications.ts     # 提醒 hooks
 │   └── useDashboard.ts         # 仪表盘统计 hooks
 ├── components/
-│   ├── ui/                     # shadcn/ui 组件
+│   ├── ui/                     # shadcn/ui 组件（Card/CardColorBar, Badge含类型variant）
+│   ├── theme/
+│   │   └── ThemeProvider.tsx   # 深色模式（context + localStorage + class toggle）
 │   ├── layout/
 │   │   ├── Sidebar.tsx         # 侧边导航（>=768px 显示）
 │   │   ├── BottomNav.tsx       # 底部 Tab 导航（<768px 显示）
@@ -216,23 +218,29 @@ client/src/
 │   │   ├── SupplierDetail.tsx  # 供应商详情
 │   │   └── SupplierForm.tsx    # 供应商表单
 │   ├── dashboard/
-│   │   └── Dashboard.tsx       # 仪表盘（统计卡片+图表+订阅+健康）
+│   │   ├── Dashboard.tsx       # 仪表盘主组件（6格统计条+状态板块+甘特+日历+提醒）
+│   │   ├── GanttTimeline.tsx   # SVG甘特时间轴（近60天，制图学风格）
+│   │   ├── MiniCalendar.tsx    # 日历组件（年月日跳转+事件蓝/红点标记）
+│   │   └── [内联] ReminderPanel / StatusBoard  # 提醒建议面板 / 资产状态板块
 │   ├── import/
 │   │   └── ImportWizard.tsx    # 导入向导（上传→预览→映射→导入）
 │   ├── export/
 │   │   └── ExportPage.tsx      # 数据导出（资产/供应商Excel导出）
 │   ├── notification/
 │   │   └── NotificationPage.tsx # 通知页面（未读/全部+批量操作）
+│   ├── relation/
+│   │   └── RelationManager.tsx  # 关联管理（搜索+添加+移除）
+│   ├── ErrorBoundary.tsx        # 全局错误边界
 ├── types/
 │   └── asset.ts                # 资产类型定义
-└── index.css                   # Tailwind + shadcn/ui 主题
+└── index.css                   # Tailwind v4 @theme inline + 时空融合 v2 色系（暖纸色+墨色+类型三色）
 ```
 
 ### 2.2 路由结构
 
 ```
 /                     → DashboardPage        仪表盘
-/assets               → AssetListPage        资产列表
+/assets               → AssetListPage        资产列表（支持 URL 筛选参数：?type=&status=&sort=&q=）
 /assets/:id           → AssetDetailPage      资产详情
 /assets/new           → AssetForm（新建模式）
 /assets/:id/edit      → AssetForm（编辑模式）
@@ -244,6 +252,8 @@ client/src/
 /export               → ExportPage           数据导出
 /notifications        → NotificationPage     通知页面
 ```
+
+资产列表 URL 参数：`type`（physical/digital/subscription）、`status`（active/idle/expired/disposed）、`sort`（name/price/created_at/updated_at）、`q`（搜索）
 
 ### 2.3 页面布局
 
@@ -324,7 +334,7 @@ client/src/
 | `/api/assets/:id/screenshot` | POST | 上传订阅截图 |
 | `/api/assets/ocr` | POST | OCR 识别订阅截图 |
 
-**安全：** 全部使用参数化查询防 SQL 注入。
+**安全：** 全部使用参数化查询防 SQL 注入。POST/PUT 端点通过 `middleware/validate.ts` 校验必填字段、枚举值、UUID 格式等，非法输入返回 400。文件路径用 `path.resolve + startsWith` 防路径穿越。
 
 ### 3.3 数据流
 
@@ -404,14 +414,18 @@ e2e/
 ├── helpers/
 │   └── common.ts              # 通用测试辅助函数
 └── specs/
-    ├── dashboard.spec.ts      # 仪表盘（空态 / 有数据）
-    ├── asset-crud.spec.ts     # 资产查看 / 删除 / 表单创建 / 编辑（6 个测试）
-    ├── asset-list.spec.ts     # 资产列表筛选 / 搜索
+    ├── dashboard.spec.ts      # 仪表盘（空态 / 有数据 / 图表渲染）
+    ├── asset-crud.spec.ts     # 资产查看 / 删除 / 表单创建物理/数字 / 编辑（5 个测试）
+    ├── asset-list.spec.ts     # 资产列表筛选 / 搜索 / 排序 / 批量操作（7 个测试）
     ├── supplier-crud.spec.ts  # 供应商查看 / 删除 / 创建 / 编辑 / 收藏切换（5 个测试）
     ├── cross-nav.spec.ts      # 跨页面导航（资产→供应商）
-    ├── import-export.spec.ts  # 数据导出
-    ├── notifications.spec.ts  # 通知查看 / 标记已读 / 忽略（2 个测试）
-    └── mobile.spec.ts         # 移动端底部导航
+    ├── import-export.spec.ts  # 数据导出（资产/供应商 Excel）
+    ├── import.spec.ts         # CSV 导入流程 / 非 CSV 文件拒绝
+    ├── notifications.spec.ts  # 通知查看 / 忽略 / 批量已读 / 批量忽略（4 个测试）
+    ├── relation.spec.ts       # 关联添加 / 删除 / 影响提示（3 个测试）
+    ├── ocr.spec.ts            # 订阅截图上传
+    ├── mobile.spec.ts         # 移动端底部导航
+    └── debug-dashboard.spec.ts # 调试用仪表盘截图
 ```
 
 ### 6.3 测试隔离
@@ -457,3 +471,40 @@ shadcn/ui 的 Radix Select 组件在 DOM 中表现为 `combobox` role（不是 `
 pnpm e2e          # 构建并运行全部 E2E 测试
 pnpm e2e:headed   # 有头模式，可视化调试
 ```
+
+---
+
+## 7. 设计风格探索
+
+### 7.1 目录结构
+
+```
+docs/design-exploration/
+├── index.html                    # 画廊索引页（缩略图+跳转）
+├── screenshots/                  # 21 张全页截图（PNG）
+├── 01-minimal-luxury.html        # 极简高级风
+├── 02-apple-product.html         # Apple 产品官网风
+├── 03-swiss-international.html   # 瑞士国际主义风
+├── 04-bento-grid.html            # Bento 卡片风
+├── 05-dark-saas.html             # 深色科技 SaaS 风
+├── 06-design-system.html         # 设计系统风
+├── 07-glassmorphism.html         # 玻璃拟态风
+├── 08-3d-immersive.html          # 3D 沉浸风
+├── 09-data-viz.html              # 数据可视化风
+├── 10-magazine-editorial.html    # 杂志编辑风
+├── 11-dynamic-typography.html    # 动态排版风
+├── 12-fullscreen-visual.html     # 全屏视觉风
+├── 13-neo-brutalism.html         # 新野兽派
+├── 14-retro-futurism.html        # 复古未来主义
+├── 15-y2k-digital.html           # Y2K 数字风
+├── 16-illustration-brand.html    # 插画品牌风
+├── 17-handwritten-graffiti.html  # 手写涂鸦风
+├── 18-organic-nature.html        # 有机自然风
+├── 19-financial-terminal.html    # 金融终端风
+├── 20-timeline.html              # 日历时间线风
+├── 21-territory-map.html         # 地图空间风
+├── 22-space-time-fusion.html     # 时空融合风（地图+时间线，双页路由：总览/关联关系）
+└── 23-space-time-v2.html        # 时空融合 v2（总览=22风格，关联关系=严格复制21号领地地图）
+```
+
+每个文件为完整独立 HTML（仅依赖 Google Fonts CDN），包含仪表盘全部数据区域。双击即可在浏览器中查看。

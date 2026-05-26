@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Dynamic Typography</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0e0e0e;
+    --text: #f0efe9;
+    --text-dim: #6b6b65;
+    --accent: #e8e8e0;
+    --red: #ff3d3d;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .canvas {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 40px;
+  }
+
+  /* Header - pure type */
+  header {
+    margin-bottom: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand__name {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 12px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .brand__sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .brand__alerts {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--red);
+    text-align: right;
+  }
+
+  /* Hero stat - oversized type */
+  .hero-stat {
+    margin-bottom: 80px;
+    position: relative;
+  }
+
+  .hero-stat__bg {
+    position: absolute;
+    top: -20px;
+    left: -10px;
+    font-size: 180px;
+    font-weight: 700;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(240, 239, 233, 0.06);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .hero-stat__primary {
+    font-size: 120px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -4px;
+    position: relative;
+  }
+
+  .hero-stat__primary span {
+    font-weight: 300;
+    font-size: 40px;
+    vertical-align: top;
+    margin-left: 4px;
+    letter-spacing: 0;
+    color: var(--text-dim);
+  }
+
+  .hero-stat__label {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* Stats row - type rhythm */
+  .stats-rhythm {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(240, 239, 233, 0.1);
+    border-bottom: 1px solid rgba(240, 239, 233, 0.1);
+    margin-bottom: 64px;
+  }
+
+  .rhythm-item {
+    padding: 32px 24px;
+    position: relative;
+  }
+
+  .rhythm-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 24px; bottom: 24px;
+    width: 1px;
+    background: rgba(240, 239, 233, 0.08);
+  }
+
+  .rhythm-item__num {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .rhythm-item__num--red { color: var(--red); }
+
+  .rhythm-item__label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* Type distribution - typographic composition */
+  .type-composition {
+    margin-bottom: 64px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+
+  .composition__section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(240, 239, 233, 0.1);
+  }
+
+  /* Typographic type bars */
+  .type-word {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+
+  .type-word__chars {
+    display: flex;
+    gap: 0;
+  }
+
+  .type-word__char {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    display: inline-block;
+    transition: color 0.3s ease;
+  }
+
+  .type-word__char--dim {
+    color: rgba(240, 239, 233, 0.12);
+  }
+
+  .type-word__label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-left: 16px;
+    align-self: flex-end;
+    padding-bottom: 6px;
+  }
+
+  /* Mini bar chart */
+  .type-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 60px;
+  }
+
+  .type-bar {
+    background: rgba(240, 239, 233, 0.15);
+    width: 100%;
+    position: relative;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .type-bar--active { background: var(--text); }
+
+  /* Status - typographic block */
+  .status-block {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .status-line__value {
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .status-line__unit {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-dim);
+    align-self: flex-end;
+    padding-bottom: 10px;
+  }
+
+  .status-line__desc {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    align-self: flex-end;
+    padding-bottom: 14px;
+  }
+
+  .status-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+  }
+
+  .status-divider__line {
+    flex: 1;
+    height: 1px;
+    background: rgba(240, 239, 233, 0.08);
+  }
+
+  .status-divider__text {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+  }
+
+  /* Subscription */
+  .subscription-section {
+    margin-bottom: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(240, 239, 233, 0.1);
+  }
+
+  .sub-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .sub-header__title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .sub-amount {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .sub-amount__symbol {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--text-dim);
+  }
+
+  .sub-amount__value {
+    font-size: 80px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+
+  .sub-amount__period {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-left: 8px;
+    align-self: flex-end;
+    padding-bottom: 8px;
+  }
+
+  /* Trend bar chart */
+  .trend-type-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 80px;
+    padding-top: 8px;
+  }
+
+  .trend-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+
+  .trend-col__bar {
+    width: 100%;
+    border-radius: 2px 2px 0 0;
+    transition: height 1s ease;
+  }
+
+  .trend-col__label {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* Footer note */
+  .footer-note {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(240, 239, 233, 0.08);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 768px) {
+    .canvas { padding: 24px 20px; }
+    .hero-stat__primary { font-size: 72px; }
+    .hero-stat__bg { font-size: 100px; }
+    .stats-rhythm { grid-template-columns: 1fr; }
+    .rhythm-item:not(:last-child)::after { display: none; }
+    .rhythm-item:not(:last-child) { border-bottom: 1px solid rgba(240, 239, 233, 0.08); }
+    .type-composition { grid-template-columns: 1fr; }
+    .sub-amount__value { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+  <header>
+    <div class="brand">
+      <div class="brand__name">MetaVault</div>
+      <div class="brand__sub">Asset Dashboard</div>
+    </div>
+    <div class="brand__alerts">3 alerts</div>
+  </header>
+
+  <!-- Hero: Total Value -->
+  <section class="hero-stat">
+    <div class="hero-stat__bg">5199</div>
+    <div class="hero-stat__primary">
+      ¥5,199<span>总值</span>
+    </div>
+    <div class="hero-stat__label">Portfolio Total Value</div>
+  </section>
+
+  <!-- Stats rhythm -->
+  <div class="stats-rhythm">
+    <div class="rhythm-item">
+      <div class="rhythm-item__num">8</div>
+      <div class="rhythm-item__label">资产总数</div>
+    </div>
+    <div class="rhythm-item">
+      <div class="rhythm-item__num">1</div>
+      <div class="rhythm-item__label">供应商</div>
+    </div>
+    <div class="rhythm-item">
+      <div class="rhythm-item__num rhythm-item__num--red">2</div>
+      <div class="rhythm-item__label">即将到期</div>
+    </div>
+  </div>
+
+  <!-- Type composition -->
+  <div class="type-composition">
+    <div>
+      <div class="composition__section-title">资产类型</div>
+
+      <div class="type-word">
+        <div class="type-word__chars">
+          <span class="type-word__char">物</span>
+          <span class="type-word__char">理</span>
+          <span class="type-word__char">资</span>
+          <span class="type-word__char">产</span>
+        </div>
+        <span class="type-word__label">x5</span>
+      </div>
+
+      <div class="type-word">
+        <div class="type-word__chars">
+          <span class="type-word__char type-word__char--dim">数</span>
+          <span class="type-word__char type-word__char--dim">字</span>
+        </div>
+        <span class="type-word__label">x1</span>
+      </div>
+
+      <div class="type-word">
+        <div class="type-word__chars">
+          <span class="type-word__char type-word__char--dim">订</span>
+          <span class="type-word__char type-word__char--dim">阅</span>
+        </div>
+        <span class="type-word__label">x2</span>
+      </div>
+
+      <div style="margin-top:24px">
+        <div class="type-bars">
+          <div class="type-bar type-bar--active" style="height:100%"></div>
+          <div class="type-bar type-bar--active" style="height:100%"></div>
+          <div class="type-bar type-bar--active" style="height:100%"></div>
+          <div class="type-bar type-bar--active" style="height:100%"></div>
+          <div class="type-bar type-bar--active" style="height:100%"></div>
+          <div class="type-bar" style="height:20%"></div>
+          <div class="type-bar type-bar--active" style="height:40%"></div>
+          <div class="type-bar type-bar--active" style="height:40%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--text-dim);margin-top:4px">
+          <span>物理 5</span>
+          <span>数字 1</span>
+          <span>订阅 2</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="composition__section-title">资产状态</div>
+
+      <div class="status-block">
+        <div class="status-line">
+          <div class="status-line__value">8</div>
+          <div class="status-line__unit">/ 8</div>
+          <div class="status-line__desc">使用中</div>
+        </div>
+
+        <div class="status-divider">
+          <div class="status-divider__line"></div>
+          <div class="status-divider__text">利用率</div>
+          <div class="status-divider__line"></div>
+        </div>
+
+        <div class="status-line">
+          <div class="status-line__value" style="font-size:48px">100%</div>
+        </div>
+
+        <div class="status-divider">
+          <div class="status-divider__line"></div>
+          <div class="status-divider__text">全部活跃</div>
+          <div class="status-divider__line"></div>
+        </div>
+
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:1.8">
+          闲置 0 · 已处置 0 · 维修中 0<br>
+          <span style="color:var(--red)">2 项即将到期需关注</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription -->
+  <section class="subscription-section">
+    <div class="sub-header">
+      <div class="sub-header__title">订阅费用 / 月</div>
+      <div class="sub-amount">
+        <span class="sub-amount__symbol">¥</span>
+        <span class="sub-amount__value">298</span>
+        <span class="sub-amount__period">2026-05</span>
+      </div>
+    </div>
+
+    <div class="trend-type-chart">
+      <div class="trend-col"><div class="trend-col__bar" style="height:40%;background:rgba(240,239,233,0.2)"></div><div class="trend-col__label">08</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:42%;background:rgba(240,239,233,0.2)"></div><div class="trend-col__label">09</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:48%;background:rgba(240,239,233,0.25)"></div><div class="trend-col__label">10</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:58%;background:rgba(240,239,233,0.3)"></div><div class="trend-col__label">11</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:68%;background:rgba(240,239,233,0.35)"></div><div class="trend-col__label">12</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:75%;background:rgba(240,239,233,0.4)"></div><div class="trend-col__label">01</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:82%;background:rgba(240,239,233,0.5)"></div><div class="trend-col__label">02</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:88%;background:rgba(240,239,233,0.6)"></div><div class="trend-col__label">03</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:92%;background:rgba(240,239,233,0.7)"></div><div class="trend-col__label">04</div></div>
+      <div class="trend-col"><div class="trend-col__bar" style="height:100%;background:var(--text)"></div><div class="trend-col__label" style="color:var(--text)">05</div></div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    <span>MetaVault · Dynamic Typography</span>
+    <span>2026.05.25</span>
+  </div>
+</div>
+
+</body>
+</html>

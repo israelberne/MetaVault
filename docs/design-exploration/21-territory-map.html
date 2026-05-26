@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault - Territory Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--pg:#f4ede4;--ink:#2c2418;--ink2:#6b5d4d;--ink3:#b8a994;--phy:#4a7c9b;--dig:#8b6fad;--sub:#c4943a;--wrn:#c0392b}
+body{background:var(--pg);color:var(--ink);font-family:'Source Sans 3',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,119,90,.03) 2px,rgba(139,119,90,.03) 4px),repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(139,119,90,.02) 3px,rgba(139,119,90,.02) 6px);pointer-events:none;z-index:0}
+header{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;padding:18px 36px;border-bottom:1.5px solid var(--ink3)}
+.logo{display:flex;align-items:baseline;gap:12px}
+.logo h1{font-family:'Cinzel',serif;font-weight:900;font-size:26px;letter-spacing:3px;text-transform:uppercase}
+.logo .sub{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--ink2)}
+.hdr-r{display:flex;align-items:center;gap:18px}
+.badge{position:relative;width:34px;height:34px;border:1.5px solid var(--ink2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.3s}
+.badge:hover{background:var(--ink);color:var(--pg)}
+.badge .ct{position:absolute;top:-4px;right:-4px;background:var(--wrn);color:#fff;font-size:9px;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.date{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--ink2)}
+main{position:relative;z-index:1;display:grid;grid-template-columns:200px 1fr 200px;min-height:calc(100vh - 72px)}
+.panel{padding:24px 16px;display:flex;flex-direction:column;gap:18px}
+.panel-l{border-right:1.5px solid var(--ink3)}
+.panel-r{border-left:1.5px solid var(--ink3)}
+.ptitle{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--ink2);text-align:center;padding-bottom:10px;border-bottom:1px solid var(--ink3)}
+.litem{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;transition:.3s}
+.litem:hover{transform:translateX(3px)}
+.sw{width:24px;height:24px;border:1.5px solid;flex-shrink:0;border-radius:3px}
+.sw.phy{background:rgba(74,124,155,.18);border-color:var(--phy)}
+.sw.dig{background:rgba(139,111,173,.18);border-color:var(--dig);border-radius:10px}
+.sw.sub{background:rgba(196,148,58,.18);border-color:var(--sub);border-radius:0 10px 10px 10px}
+.sw.wrn{background:rgba(192,57,43,.08);border-color:var(--wrn);border-style:dashed}
+.ll{font-size:12px;font-weight:600}
+.ld{font-size:10px;color:var(--ink2);margin-top:1px}
+.lc{font-family:'Cinzel',serif;font-size:18px;font-weight:700;margin-left:auto}
+.pop{margin-top:auto;border:1.5px solid var(--ink2);padding:14px;text-align:center;position:relative}
+.pop::before,.pop::after{content:'';position:absolute;width:7px;height:7px;border:1.5px solid var(--ink2)}
+.pop::before{top:-3px;left:-3px;border-right:none;border-bottom:none}
+.pop::after{bottom:-3px;right:-3px;border-left:none;border-top:none}
+.pop-l{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--ink2);margin-bottom:3px}
+.pop-n{font-family:'Cinzel',serif;font-size:38px;font-weight:900;line-height:1}
+.pop-s{font-size:10px;color:var(--ink2);margin-top:5px}
+.map{position:relative;overflow:hidden;background:var(--pg)}
+.map svg{width:100%;height:100%;min-height:calc(100vh - 72px)}
+.sc{border:1px solid var(--ink3);padding:10px;transition:.3s}
+.sc:hover{border-color:var(--ink2);background:rgba(44,36,24,.03)}
+.sc .sl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink2);margin-bottom:3px}
+.sc .sv{font-family:'Cinzel',serif;font-size:18px;font-weight:700}
+.sc .su{font-size:11px;color:var(--ink2);margin-left:2px}
+.sc.w{border-color:var(--wrn);border-style:dashed;background:rgba(192,57,43,.06)}
+.sc.w .sv{color:var(--wrn)}
+.compass{margin-top:auto;display:flex;justify-content:center;padding:8px 0}
+.tz{transition:.4s;cursor:pointer}
+.tz:hover{filter:brightness(1.1)}
+.tz:hover .zf{fill-opacity:.35}
+.zf{transition:fill-opacity .4s}
+.zl{font-family:'Cinzel',serif;font-weight:700;pointer-events:none}
+.zc{font-family:'Cinzel',serif;font-weight:900;pointer-events:none}
+.zs{font-family:'Source Sans 3',sans-serif;pointer-events:none}
+.cl{fill:none;stroke:var(--ink3);stroke-width:.5;opacity:.4}
+.gl{stroke:var(--ink3);stroke-width:.3;opacity:.2}
+.rp{fill:none;stroke-width:1.5;stroke-dasharray:6 4;opacity:.5;transition:.3s}
+.rp:hover{opacity:1;stroke-width:2.5}
+.am{transition:.3s;cursor:pointer}
+.am:hover{transform:scale(1.15)}
+.wz{animation:wp 2s ease-in-out infinite}
+@keyframes wp{0%,100%{stroke-opacity:.6}50%{stroke-opacity:1}}
+@keyframes rf{to{stroke-dashoffset:-20}}
+.rv{animation:rf 1.5s linear infinite}
+.tt{position:fixed;background:var(--ink);color:var(--pg);padding:8px 12px;border-radius:3px;font-size:12px;pointer-events:none;opacity:0;transition:opacity .2s;z-index:100;max-width:180px}
+.tt.v{opacity:1}
+.tt .tn{font-family:'Cinzel',serif;font-weight:700;font-size:13px;margin-bottom:3px}
+.tt .td{font-size:10px;opacity:.8}
+@media(max-width:900px){main{grid-template-columns:1fr}.panel{border:none!important;border-bottom:1.5px solid var(--ink3)!important;flex-direction:row;flex-wrap:wrap;padding:12px;gap:10px}.ptitle,.compass{display:none}.pop{margin-top:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><h1>MetaVault</h1><span class="sub">Asset Territory Map</span></div>
+  <div class="hdr-r">
+    <span class="date" id="dd"></span>
+    <div class="badge" title="3 条未读提醒">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="ct">3</span>
+    </div>
+  </div>
+</header>
+<main>
+  <aside class="panel panel-l">
+    <div class="ptitle">Map Legend</div>
+    <div class="litem" data-zone="physical"><div class="sw phy"></div><div><div class="ll">Physical Zone</div><div class="ld">物理资产领地</div></div><span class="lc">5</span></div>
+    <div class="litem" data-zone="digital"><div class="sw dig"></div><div><div class="ll">Digital Zone</div><div class="ld">数字资产领地</div></div><span class="lc">1</span></div>
+    <div class="litem" data-zone="subscription"><div class="sw sub"></div><div><div class="ll">Subscription Zone</div><div class="ld">订阅资产领地</div></div><span class="lc">2</span></div>
+    <div class="litem" data-zone="warning"><div class="sw wrn"></div><div><div class="ll">Warning Zone</div><div class="ld">即将到期区域</div></div><span class="lc" style="color:var(--wrn)">2</span></div>
+    <div class="litem"><svg width="24" height="24" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="var(--ink2)" stroke-width="1.5" stroke-dasharray="4 3"/></svg><div><div class="ll">Trade Route</div><div class="ld">资产关联路径</div></div></div>
+    <div class="pop"><div class="pop-l">Total Population</div><div class="pop-n">8</div><div class="pop-s">assets in territory</div></div>
+  </aside>
+
+  <section class="map">
+    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="tg" width="40" height="40" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="40" y2="0" class="gl"/><line x1="0" y1="0" x2="0" y2="40" class="gl"/>
+        </pattern>
+        <filter id="wg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="800" height="600" fill="url(#tg)"/>
+      <!-- Contour lines -->
+      <ellipse cx="200" cy="300" rx="180" ry="220" class="cl"/><ellipse cx="200" cy="300" rx="120" ry="150" class="cl"/>
+      <ellipse cx="620" cy="160" rx="160" ry="120" class="cl"/>
+      <ellipse cx="620" cy="440" rx="160" ry="120" class="cl"/>
+
+      <!-- PHYSICAL ZONE -->
+      <g class="tz" data-zone="physical">
+        <path class="zf" d="M30,80 L30,520 Q30,540 50,540 L350,540 Q370,540 370,520 L370,80 Q370,60 350,60 L50,60 Q30,60 30,80Z" fill="var(--phy)" fill-opacity=".15" stroke="var(--phy)" stroke-width="2"/>
+        <text x="200" y="95" text-anchor="middle" class="zl" fill="var(--phy)" font-size="15" letter-spacing="4">PHYSICAL ZONE</text>
+        <text x="200" y="112" text-anchor="middle" class="zs" fill="var(--phy)" font-size="10" opacity=".7">物理资产领地</text>
+        <!-- Laptop -->
+        <g class="am" data-name="ThinkPad X1" data-type="physical" data-value="¥8,999">
+          <rect x="60" y="140" width="70" height="50" rx="2" fill="rgba(74,124,155,.18)" stroke="var(--phy)" stroke-width="1.5"/>
+          <rect x="65" y="145" width="60" height="30" fill="none" stroke="var(--phy)" stroke-width=".8" opacity=".5"/>
+          <line x1="55" y1="190" x2="135" y2="190" stroke="var(--phy)" stroke-width="1.5"/>
+          <text x="95" y="208" text-anchor="middle" font-size="9" fill="var(--ink2)">ThinkPad</text>
+        </g>
+        <!-- Phone -->
+        <g class="am" data-name="iPhone 15 Pro" data-type="physical" data-value="¥8,999">
+          <rect x="160" y="150" width="40" height="65" rx="4" fill="rgba(74,124,155,.18)" stroke="var(--phy)" stroke-width="1.5"/>
+          <rect x="165" y="158" width="30" height="45" fill="none" stroke="var(--phy)" stroke-width=".8" opacity=".5"/>
+          <text x="180" y="228" text-anchor="middle" font-size="9" fill="var(--ink2)">iPhone</text>
+        </g>
+        <!-- Headphones -->
+        <g class="am" data-name="AirPods Max" data-type="physical" data-value="¥4,399">
+          <rect x="230" y="155" width="55" height="45" rx="8" fill="rgba(74,124,155,.18)" stroke="var(--phy)" stroke-width="1.5"/>
+          <path d="M240,155 Q257,135 275,155" fill="none" stroke="var(--phy)" stroke-width="1.5"/>
+          <text x="257" y="213" text-anchor="middle" font-size="9" fill="var(--ink2)">AirPods</text>
+        </g>
+        <!-- Monitor -->
+        <g class="am" data-name="Dell U2723QE" data-type="physical" data-value="¥3,599">
+          <rect x="70" y="270" width="90" height="55" rx="2" fill="rgba(74,124,155,.18)" stroke="var(--phy)" stroke-width="1.5"/>
+          <rect x="78" y="277" width="74" height="38" fill="none" stroke="var(--phy)" stroke-width=".8" opacity=".5"/>
+          <line x1="115" y1="325" x2="115" y2="340" stroke="var(--phy)" stroke-width="1.5"/>
+          <line x1="100" y1="340" x2="130" y2="340" stroke="var(--phy)" stroke-width="1.5"/>
+          <text x="115" y="356" text-anchor="middle" font-size="9" fill="var(--ink2)">Dell</text>
+        </g>
+        <!-- Keyboard (warning) -->
+        <g class="am" data-name="HHKB Professional" data-type="physical" data-value="¥2,199" data-warning="true">
+          <rect x="200" y="290" width="80" height="35" rx="3" fill="rgba(74,124,155,.18)" stroke="var(--phy)" stroke-width="1.5"/>
+          <rect x="195" y="285" width="90" height="45" rx="5" fill="none" stroke="var(--wrn)" stroke-width="1.5" stroke-dasharray="4 3" class="wz" filter="url(#wg)"/>
+          <text x="240" y="348" text-anchor="middle" font-size="9" fill="var(--wrn)">HHKB &#x26A0;</text>
+        </g>
+        <circle cx="345" cy="75" r="15" fill="var(--phy)" opacity=".9"/>
+        <text x="345" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" class="zc">5</text>
+      </g>
+
+      <!-- DIGITAL ZONE -->
+      <g class="tz" data-zone="digital">
+        <path class="zf" d="M460,40 Q460,30 480,30 L740,30 Q760,30 760,50 L760,230 Q760,250 740,250 L480,250 Q460,250 460,230Z" fill="var(--dig)" fill-opacity=".15" stroke="var(--dig)" stroke-width="2"/>
+        <!-- Cloud bumps on top edge -->
+        <path d="M490,42 Q510,22 540,28 Q565,14 600,24 Q630,16 660,26 Q700,22 750,48" fill="none" stroke="var(--dig)" stroke-width="1.5" opacity=".5"/>
+        <text x="610" y="75" text-anchor="middle" class="zl" fill="var(--dig)" font-size="15" letter-spacing="4">DIGITAL ZONE</text>
+        <text x="610" y="92" text-anchor="middle" class="zs" fill="var(--dig)" font-size="10" opacity=".7">数字资产领地</text>
+        <!-- Adobe CC -->
+        <g class="am" data-name="Adobe CC" data-type="digital" data-value="¥888/yr">
+          <path d="M560,130 Q560,115 575,115 Q580,105 595,110 Q605,100 620,110 Q635,105 645,115 Q660,112 665,125 Q675,125 675,140 Q675,155 660,155 L570,155 Q555,155 555,140 Q555,130 560,130Z" fill="rgba(139,111,173,.18)" stroke="var(--dig)" stroke-width="1.5"/>
+          <text x="615" y="173" text-anchor="middle" font-size="9" fill="var(--ink2)">Adobe CC</text>
+        </g>
+        <circle cx="735" cy="50" r="15" fill="var(--dig)" opacity=".9"/>
+        <text x="735" y="55" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" class="zc">1</text>
+      </g>
+
+      <!-- SUBSCRIPTION ZONE -->
+      <g class="tz" data-zone="subscription">
+        <path class="zf" d="M460,290 Q470,280 490,285 L740,280 Q760,278 760,298 L770,530 Q770,550 750,552 L490,560 Q470,562 468,542Z" fill="var(--sub)" fill-opacity=".12" stroke="var(--sub)" stroke-width="2"/>
+        <!-- River flow lines -->
+        <path d="M470,320 Q550,310 620,325 Q690,340 760,330" fill="none" stroke="var(--sub)" stroke-width="1" stroke-dasharray="8 6" class="rv" opacity=".3"/>
+        <path d="M470,380 Q560,370 640,385 Q710,400 760,390" fill="none" stroke="var(--sub)" stroke-width="1" stroke-dasharray="8 6" class="rv" opacity=".25" style="animation-delay:-.5s"/>
+        <path d="M470,460 Q550,450 630,460 Q700,470 760,463" fill="none" stroke="var(--sub)" stroke-width="1" stroke-dasharray="8 6" class="rv" opacity=".2" style="animation-delay:-1s"/>
+        <text x="610" y="315" text-anchor="middle" class="zl" fill="var(--sub)" font-size="15" letter-spacing="4">SUBSCRIPTION ZONE</text>
+        <text x="610" y="332" text-anchor="middle" class="zs" fill="var(--sub)" font-size="10" opacity=".7">订阅资产领地</text>
+        <!-- iCloud+ -->
+        <g class="am" data-name="iCloud+" data-type="subscription" data-value="¥21/月">
+          <path d="M530,370 Q530,358 545,358 Q550,348 565,353 Q575,345 590,353 Q600,348 610,355 Q620,350 628,358 Q638,355 642,365 Q650,365 650,375 Q650,385 640,385 L540,385 Q530,385 530,375 Q530,370 530,370Z" fill="rgba(196,148,58,.18)" stroke="var(--sub)" stroke-width="1.5"/>
+          <text x="590" y="400" text-anchor="middle" font-size="9" fill="var(--ink2)">iCloud+</text>
+        </g>
+        <!-- Spotify (warning) -->
+        <g class="am" data-name="Spotify Premium" data-type="subscription" data-value="¥15/月" data-warning="true">
+          <path d="M530,460 Q530,448 545,448 Q550,438 565,443 Q575,435 590,443 Q600,438 610,445 Q620,440 628,448 Q638,445 642,455 Q650,455 650,465 Q650,475 640,475 L540,475 Q530,475 530,465 Q530,460 530,460Z" fill="rgba(196,148,58,.18)" stroke="var(--sub)" stroke-width="1.5"/>
+          <rect x="520" y="432" width="140" height="55" rx="6" fill="none" stroke="var(--wrn)" stroke-width="1.5" stroke-dasharray="4 3" class="wz" filter="url(#wg)"/>
+          <text x="590" y="490" text-anchor="middle" font-size="9" fill="var(--wrn)">Spotify &#x26A0;</text>
+        </g>
+        <circle cx="735" cy="295" r="15" fill="var(--sub)" opacity=".9"/>
+        <text x="735" y="300" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" class="zc">2</text>
+      </g>
+
+      <!-- RELATIONSHIP PATHS -->
+      <g>
+        <path d="M95,190 Q95,230 115,270" class="rp" stroke="var(--phy)"/>
+        <path d="M180,215 Q350,200 530,370" class="rp" stroke="var(--dig)"/>
+        <path d="M130,165 Q350,120 555,140" class="rp" stroke="var(--dig)"/>
+        <path d="M230,177 Q210,170 200,170" class="rp" stroke="var(--phy)"/>
+        <path d="M200,307 Q150,250 95,190" class="rp" stroke="var(--phy)"/>
+      </g>
+
+      <!-- COMPASS ROSE -->
+      <g transform="translate(740,560)" opacity=".5">
+        <circle r="22" fill="none" stroke="var(--ink2)" stroke-width=".8"/>
+        <circle r="15" fill="none" stroke="var(--ink2)" stroke-width=".5"/>
+        <polygon points="0,-20 -4,-8 0,-12 4,-8" fill="var(--ink2)"/>
+        <polygon points="0,20 -4,8 0,12 4,8" fill="var(--ink3)"/>
+        <polygon points="20,0 8,-4 12,0 8,4" fill="var(--ink3)"/>
+        <polygon points="-20,0 -8,-4 -12,0 -8,4" fill="var(--ink3)"/>
+        <text y="-25" text-anchor="middle" font-size="8" fill="var(--ink2)" font-family="Cinzel,serif">N</text>
+      </g>
+
+      <!-- Scale bar -->
+      <g transform="translate(30,575)" opacity=".4">
+        <line x2="80" stroke="var(--ink2)"/>
+        <line y1="-3" y2="3" stroke="var(--ink2)"/>
+        <line x1="80" y1="-3" x2="80" y2="3" stroke="var(--ink2)"/>
+        <text x="40" y="11" text-anchor="middle" font-size="7" fill="var(--ink2)" font-family="Cinzel,serif">&#xA5;1,000</text>
+      </g>
+
+      <!-- Cartouche -->
+      <g transform="translate(400,575)">
+        <rect x="-50" y="-10" width="100" height="20" rx="2" fill="var(--pg)" stroke="var(--ink2)"/>
+        <text y="4" text-anchor="middle" font-size="8" fill="var(--ink2)" font-family="Cinzel,serif" letter-spacing="2">YOUR EMPIRE</text>
+      </g>
+    </svg>
+  </section>
+
+  <aside class="panel panel-r">
+    <div class="ptitle">Territory Census</div>
+    <div class="sc"><div class="sl">Total Value</div><div class="sv">&#xA5;5,199</div></div>
+    <div class="sc"><div class="sl">In Use</div><div class="sv">8<span class="su">assets</span></div></div>
+    <div class="sc"><div class="sl">Monthly Sub</div><div class="sv">&#xA5;298<span class="su">/月</span></div></div>
+    <div class="sc"><div class="sl">Suppliers</div><div class="sv">1</div></div>
+    <div class="sc w"><div class="sl">Expiring Soon</div><div class="sv">2<span class="su">items</span></div></div>
+    <div class="sc w"><div class="sl">Unread Alerts</div><div class="sv">3</div></div>
+    <div class="compass">
+      <svg width="60" height="60" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="36" fill="none" stroke="var(--ink3)" stroke-width=".8"/>
+        <circle cx="40" cy="40" r="28" fill="none" stroke="var(--ink3)" stroke-width=".5"/>
+        <circle cx="40" cy="40" r="3" fill="var(--ink2)"/>
+        <polygon points="40,6 37,30 40,26 43,30" fill="var(--ink)"/>
+        <polygon points="40,74 37,50 40,54 43,50" fill="var(--ink3)"/>
+        <polygon points="74,40 50,37 54,40 50,43" fill="var(--ink3)"/>
+        <polygon points="6,40 30,37 26,40 30,43" fill="var(--ink3)"/>
+        <text x="40" y="2" text-anchor="middle" font-size="7" fill="var(--ink)" font-family="Cinzel,serif" font-weight="700">N</text>
+      </svg>
+    </div>
+  </aside>
+</main>
+
+<div class="tt" id="tt"><div class="tn"></div><div class="td"></div></div>
+
+<script>
+const d=new Date(),M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+document.getElementById('dd').textContent=`${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`;
+
+const tt=document.getElementById('tt'),mk=document.querySelectorAll('.am');
+mk.forEach(m=>{
+  m.addEventListener('mouseenter',()=>{
+    const t=m.dataset.type,n=m.dataset.name,v=m.dataset.value,w=m.dataset.warning==='true';
+    tt.querySelector('.tn').textContent=n;
+    tt.querySelector('.td').textContent=`${t==='physical'?'物理资产':t==='digital'?'数字资产':'订阅'} · ${v}${w?' · 即将到期!':''}`;
+    tt.classList.add('v');
+  });
+  m.addEventListener('mousemove',e=>{tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-10)+'px'});
+  m.addEventListener('mouseleave',()=>tt.classList.remove('v'));
+});
+
+const li=document.querySelectorAll('.litem[data-zone]');
+li.forEach(i=>{
+  i.addEventListener('mouseenter',()=>{
+    const z=i.dataset.zone;
+    document.querySelectorAll(`.tz[data-zone="${z}"] .zf`).forEach(e=>e.style.fillOpacity='.35');
+  });
+  i.addEventListener('mouseleave',()=>{
+    document.querySelectorAll('.tz .zf').forEach(e=>e.style.fillOpacity='');
+  });
+});
+
+document.querySelectorAll('.tz').forEach(z=>{
+  z.addEventListener('mouseenter',()=>{
+    const t=z.dataset.zone;
+    li.forEach(i=>{if(i.dataset.zone===t){i.style.transform='translateX(3px)';i.style.fontWeight='700'}});
+  });
+  z.addEventListener('mouseleave',()=>{
+    li.forEach(i=>{i.style.transform='';i.style.fontWeight=''});
+  });
+});
+</script>
+</body>
+</html>

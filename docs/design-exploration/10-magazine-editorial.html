@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Magazine Editorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f8f5f0;
+    --surface: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #5a5550;
+    --text-muted: #9a9590;
+    --accent: #c4553a;
+    --accent-dark: #8b3a2a;
+    --rule: #d4cfc8;
+    --rule-light: #e8e3dc;
+  }
+
+  body {
+    font-family: 'Noto Serif SC', 'Playfair Display', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 40px;
+  }
+
+  /* Masthead */
+  .masthead {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--text);
+  }
+
+  .masthead__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .masthead__title span { color: var(--accent); }
+
+  .masthead__subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .masthead__rule {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .masthead__rule::before,
+  .masthead__rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .masthead__date {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Lead story - hero stat */
+  .lead { margin-bottom: 56px; }
+
+  .lead__kicker {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .lead__headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  .lead__headline span {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .lead__body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    max-width: 520px;
+    columns: 1;
+  }
+
+  .lead__body .drop-cap {
+    float: left;
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 0.8;
+    margin-right: 10px;
+    margin-top: 4px;
+    color: var(--accent);
+  }
+
+  /* Stat strip */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--text);
+    border-bottom: 1px solid var(--text);
+    margin-bottom: 48px;
+  }
+
+  .stat-item {
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 20%; bottom: 20%;
+    width: 1px;
+    background: var(--rule);
+  }
+
+  .stat-item__number {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-item__label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Two-column spread */
+  .spread {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 48px;
+  }
+
+  .section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule-light);
+  }
+
+  /* Type distribution - editorial list */
+  .type-list { list-style: none; }
+
+  .type-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px dotted var(--rule-light);
+    font-size: 15px;
+  }
+
+  .type-list li:last-child { border-bottom: none; }
+
+  .type-list__name { font-weight: 500; }
+
+  .type-list__count {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .type-list__bar {
+    flex: 1;
+    margin: 0 16px;
+    height: 2px;
+    background: var(--rule-light);
+    position: relative;
+    min-width: 40px;
+  }
+
+  .type-list__bar::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  .type-list li:nth-child(1) .type-list__bar::after { width: 62.5%; }
+  .type-list li:nth-child(2) .type-list__bar::after { width: 12.5%; }
+  .type-list li:nth-child(3) .type-list__bar::after { width: 25%; }
+
+  /* Status - editorial paragraph */
+  .status-prose {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+
+  .status-prose strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .status-highlight {
+    display: block;
+    margin: 20px 0;
+    padding: 24px 28px;
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--accent-dark);
+  }
+
+  /* Pull quote */
+  .pull-quote {
+    margin: 36px 0;
+    padding: 32px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    text-align: center;
+  }
+
+  .pull-quote__text {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .pull-quote__attr {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  /* Subscription trend */
+  .trend-section {
+    margin-bottom: 32px;
+    padding-top: 32px;
+    border-top: 2px solid var(--text);
+  }
+
+  .trend-section__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .trend-section__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .trend-section__figure {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  .trend-section__period {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .trend-chart { width: 100%; height: 120px; }
+
+  /* Colophon */
+  .colophon {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 2px solid var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 768px) {
+    .page { padding: 24px 20px; }
+    .masthead__title { font-size: 36px; letter-spacing: 3px; }
+    .lead__headline { font-size: 48px; }
+    .stat-strip { grid-template-columns: repeat(2, 1fr); }
+    .spread { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="masthead__title">META<span>VAULT</span></div>
+    <div class="masthead__subtitle">资产管理纵览 · Asset Management Review</div>
+    <div class="masthead__rule">
+      <span class="masthead__date">2026年5月号 · Vol. 05</span>
+    </div>
+  </header>
+
+  <!-- Lead story -->
+  <article class="lead">
+    <div class="lead__kicker">Portfolio Overview</div>
+    <div class="lead__headline">
+      ¥5,199<br><span>总资产值</span>
+    </div>
+    <div class="lead__body">
+      <span class="drop-cap">M</span>etaVault 当前管理 8 项资产，横跨物理资产、数字资产与订阅服务三大类别。其中物理资产占据主体，共 5 项；订阅类 2 项，月费用 ¥298。值得注意的是，有 2 项资产即将到期，需要及时关注续期或处置。全部资产处于使用中状态，资产利用率 100%。
+    </div>
+  </article>
+
+  <!-- Stat strip -->
+  <div class="stat-strip">
+    <div class="stat-item">
+      <div class="stat-item__number">8</div>
+      <div class="stat-item__label">资产总数</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item__number" style="color:var(--accent)">1</div>
+      <div class="stat-item__label">供应商</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item__number">5,199</div>
+      <div class="stat-item__label">资产总值 (¥)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item__number" style="color:var(--accent)">2</div>
+      <div class="stat-item__label">即将到期</div>
+    </div>
+  </div>
+
+  <!-- Two-column spread -->
+  <div class="spread">
+    <div>
+      <div class="section-label">资产类型分布</div>
+      <ul class="type-list">
+        <li>
+          <span class="type-list__name">物理资产</span>
+          <span class="type-list__bar"></span>
+          <span class="type-list__count">5</span>
+        </li>
+        <li>
+          <span class="type-list__name">数字资产</span>
+          <span class="type-list__bar"></span>
+          <span class="type-list__count">1</span>
+        </li>
+        <li>
+          <span class="type-list__name">订阅服务</span>
+          <span class="type-list__bar"></span>
+          <span class="type-list__count">2</span>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <div class="section-label">资产状态</div>
+      <div class="status-prose">
+        <span class="status-highlight">使用中 8 / 8 — 资产利用率 100%</span>
+        所有资产均处于活跃使用状态。无闲置资产，无已处置资产。资产健康度良好，但需关注 2 项即将到期资产的续期安排。
+      </div>
+    </div>
+  </div>
+
+  <!-- Pull quote -->
+  <div class="pull-quote">
+    <div class="pull-quote__text">"订阅月费用 ¥298，较上月持平，两项订阅即将到期。"</div>
+    <div class="pull-quote__attr">MetaVault 月度摘要 · 2026年5月</div>
+  </div>
+
+  <!-- Subscription trend -->
+  <section class="trend-section">
+    <div class="trend-section__header">
+      <div>
+        <div class="trend-section__title">订阅费用趋势</div>
+        <div class="trend-section__period">月度追踪</div>
+      </div>
+      <div>
+        <div class="trend-section__figure">¥298</div>
+        <div class="trend-section__period" style="text-align:right">2026年5月</div>
+      </div>
+    </div>
+    <svg class="trend-chart" viewBox="0 0 600 120">
+      <defs>
+        <linearGradient id="editGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c4553a" stop-opacity="0.08"/>
+          <stop offset="100%" stop-color="#c4553a" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,95 C80,92 120,88 180,78 C240,68 300,55 360,48 C420,42 480,38 540,35 L600,32 L600,120 L0,120 Z" fill="url(#editGrad)"/>
+      <path d="M0,95 C80,92 120,88 180,78 C240,68 300,55 360,48 C420,42 480,38 540,35 L600,32" fill="none" stroke="#c4553a" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="600" cy="32" r="4" fill="#c4553a"/>
+    </svg>
+  </section>
+
+  <!-- Colophon -->
+  <div class="colophon">
+    <span>MetaVault Asset Management</span>
+    <span>3 条未读提醒</span>
+    <span>Published 2026.05.25</span>
+  </div>
+</div>
+
+</body>
+</html>

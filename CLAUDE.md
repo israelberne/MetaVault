@@ -6,7 +6,10 @@
 ## 技术栈
 - 后端：Node.js + Express 5 + better-sqlite3
 - 前端：React 19 + TypeScript + Vite + Tailwind CSS v4
-- UI：shadcn/ui（简约留白风格）+ sonner（toast 通知）
+- UI：shadcn/ui + sonner（toast 通知）
+- 设计风格：时空融合 v2（暖纸色+墨色+制图学纹理，源自 23-space-time-v2.html）
+- 字体：Space Grotesk（标题）+ DM Sans（正文）+ JetBrains Mono（数字）+ Cinzel（关联页）
+- 色系：物理蓝 #3B6B8A / 数字紫 #9B8EC4 / 订阅金 #D4A843 / 警告红 #E74C3C
 - 数据获取：React Query v5
 - 路由：React Router v7
 - 包管理：pnpm workspace monorepo
@@ -19,18 +22,31 @@
     hooks/        React Query hooks
     lib/          API 封装（api-client + api-*）
     types/        TypeScript 类型
+    components/dashboard/  仪表盘子组件（GanttTimeline + MiniCalendar + ReminderPanel + StatusBoard）
 /server       - Node.js后端（Express + better-sqlite3）
   src/
     db/           数据库初始化（init.sql + init.ts）
     routes/       REST API 路由（assets / suppliers / relations / notifications / import / dashboard / export）
     services/     提醒扫描 + OCR识别 + Web Push服务
-    middleware/    错误处理
+    middleware/    输入校验 + 错误处理
 /e2e          - Playwright E2E 测试
   fixtures/      测试夹具（DB重置 + 种子数据 + 测试数据常量）
   helpers/       测试辅助工具
-  specs/         测试用例（8 个 spec 文件，21 个测试）
-/docs         - 产品文档（PRD / 技术设计）
+  specs/         测试用例（12 个 spec 文件，35 个测试）
+/docs         - 产品文档（PRD / 技术设计 / 设计风格探索）
 ```
+
+## 设计风格
+
+已采用 `docs/design-exploration/23-space-time-v2.html` 的时空融合 v2 方案作为项目视觉设计。核心特征：
+
+- 暖纸色背景 `#F5F0EB` + 墨色主文本 `#2c2418` + 制图学纹理（body::before 径向渐变+细线网格）
+- 三色类型体系：物理蓝 `#3B6B8A` / 数字紫 `#9B8EC4` / 订阅金 `#D4A843`，8% 透明度淡色背景
+- 6格统计网格（stats-strip）+ 卡片左侧色条（CardColorBar）+ 导航虚线装饰 + 脉冲动画
+- 深色模式：暖棕色反转（背景 `#1a1610`，文本 `#e8e0d6`）
+- 全局通过 CSS 变量驱动（index.css @theme inline），类型颜色注册为 `--color-phy/dig/sub/wrn/ink/pg` 等
+
+`docs/design-exploration/` 保留 23 个设计稿供参考（01~23），`index.html` 为画廊索引页。
 
 ## 开发命令
 - `pnpm dev` — 同时启动前后端
@@ -52,13 +68,13 @@
 - 资产关联（depends_on / contains / bound_to / related_to，详情页可添加/移除）
 - 提醒系统（8 种类型，启动时 + 每小时自动扫描）
 - Web Push 通知（VAPID，浏览器推送）
-- 统计仪表盘（总览 / 订阅费用 / 健康度 + 图表可视化）
+- 统计仪表盘（6格统计条 + 资产状态板块 + 甘特时间轴 + 日历 + 提醒/建议区域，卡片可点击跳转）
 - 数据导入（CSV / Excel，字段映射 + 预览）
 - 数据导出（Excel 格式导出资产和供应商数据）
 - 全局搜索（Header 搜索栏驱动资产列表筛选）
 - 通知页面（未读/全部筛选，批量已读/忽略）
 - 订阅截图上传 + OCR 识别（tesseract.js）
-- 资产列表排序（名称/价格/创建时间/更新时间）
+- 资产列表排序（名称/价格/创建时间/更新时间）+ URL 筛选参数驱动（?type=&status=&sort=&q=）
 - 深色模式（ThemeProvider + 切换按钮 + dark: 颜色适配）
 - 移动端适配（<768px 底部 Tab，>=768px 侧边栏）
 - 前端错误边界（ErrorBoundary 包裹路由，页面崩溃不卸载整个应用）

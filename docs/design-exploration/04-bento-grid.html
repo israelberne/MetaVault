@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaVault — Bento Grid</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F5F5F5;
+    color: #1A1A1A;
+    min-height: 100vh;
+    padding: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 8px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: #6366F1; }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .badge {
+    background: #EF4444;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 14px; font-weight: 700;
+  }
+
+  /* Bento Grid */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .card {
+    border-radius: 16px;
+    padding: 28px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .card-label {
+    font-size: 12px; font-weight: 600; color: #9CA3AF;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;
+  }
+
+  .card-value { font-size: 36px; font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; }
+  .card-sub { font-size: 13px; color: #9CA3AF; margin-top: 6px; }
+
+  /* Hero card 2x2 */
+  .card-hero {
+    grid-column: span 2;
+    grid-row: span 2;
+    background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%);
+    color: white;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-hero .card-label { color: rgba(255,255,255,0.5); }
+
+  .card-hero .card-value {
+    font-size: 52px; letter-spacing: -3px;
+    background: linear-gradient(135deg, #fff, #C7D2FE);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .hero-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 24px; }
+
+  .hero-stat-item {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 14px;
+  }
+
+  .hero-stat-item .hs-val { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+  .hero-stat-item .hs-val.red { color: #F87171; }
+  .hero-stat-item .hs-lbl {
+    font-size: 10px; color: rgba(255,255,255,0.5);
+    margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* Colored accent cards */
+  .card-purple {
+    background: linear-gradient(135deg, #7C3AED, #A855F7);
+    color: white;
+  }
+  .card-purple .card-label { color: rgba(255,255,255,0.6); }
+  .card-purple .card-sub { color: rgba(255,255,255,0.6); }
+
+  .card-green {
+    background: linear-gradient(135deg, #059669, #34D399);
+    color: white;
+  }
+  .card-green .card-label { color: rgba(255,255,255,0.6); }
+  .card-green .card-sub { color: rgba(255,255,255,0.6); }
+
+  .card-red {
+    background: linear-gradient(135deg, #DC2626, #F87171);
+    color: white;
+  }
+  .card-red .card-label { color: rgba(255,255,255,0.6); }
+  .card-red .card-sub { color: rgba(255,255,255,0.6); }
+
+  .card-wide { grid-column: span 2; }
+
+  /* Type breakdown */
+  .type-list { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+
+  .type-row { display: flex; align-items: center; gap: 14px; }
+
+  .type-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .type-info { flex: 1; }
+  .type-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+
+  .type-bar-track { height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden; }
+
+  .type-bar-fill { height: 100%; border-radius: 3px; }
+
+  .type-count {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
+    min-width: 28px; text-align: right;
+  }
+
+  /* Subscription */
+  .sub-amount { font-size: 42px; font-weight: 800; letter-spacing: -2px; color: #6366F1; }
+
+  .sub-breakdown { margin-top: 16px; display: flex; gap: 12px; }
+
+  .sub-item {
+    flex: 1; background: #F5F3FF; border-radius: 10px; padding: 12px; text-align: center;
+  }
+
+  .sub-item .si-val { font-size: 16px; font-weight: 800; color: #6366F1; }
+  .sub-item .si-lbl { font-size: 10px; color: #9CA3AF; margin-top: 2px; }
+
+  /* Status ring */
+  .status-ring { width: 100px; height: 100px; margin: 8px auto 0; position: relative; }
+  .status-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .status-ring .track { fill: none; stroke: #F3F4F6; stroke-width: 8; }
+  .status-ring .fill-ring { fill: none; stroke: #6366F1; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 251; stroke-dashoffset: 0; }
+
+  .status-center-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); text-align: center;
+  }
+
+  .status-num { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+  .status-lbl { font-size: 9px; color: #9CA3AF; text-transform: uppercase; }
+
+  /* Health */
+  .health-score {
+    font-size: 56px; font-weight: 800; letter-spacing: -3px;
+    background: linear-gradient(135deg, #6366F1, #EC4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .health-bar { display: flex; gap: 4px; margin-top: 12px; }
+  .health-segment { height: 6px; border-radius: 3px; }
+
+  .health-detail { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #9CA3AF; }
+  .health-detail .hd-val { font-weight: 700; color: #1A1A1A; }
+
+  /* Mini chart */
+  .mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; margin-top: 12px; }
+  .mini-bar { flex: 1; border-radius: 6px 6px 2px 2px; min-height: 4px; }
+
+  /* Notification list */
+  .notif-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+
+  .notif-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: #FEF2F2; border-radius: 10px;
+  }
+
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
+  .notif-text { font-size: 12px; color: #7F1D1D; font-weight: 500; }
+  .notif-time { font-size: 10px; color: #FCA5A5; margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Meta<span>Vault</span></div>
+  <div class="header-right">
+    <div class="badge">3 未读</div>
+    <div class="avatar">L</div>
+  </div>
+</div>
+
+<div class="bento">
+
+  <!-- Hero: Total Value 2x2 -->
+  <div class="card card-hero">
+    <div>
+      <div class="card-label">资产总值</div>
+      <div class="card-value">¥5,199</div>
+      <div class="card-sub" style="color:rgba(255,255,255,0.4)">CNY / 人民币</div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat-item">
+        <div class="hs-val">8</div>
+        <div class="hs-lbl">资产总数</div>
+      </div>
+      <div class="hero-stat-item">
+        <div class="hs-val">1</div>
+        <div class="hs-lbl">供应商</div>
+      </div>
+      <div class="hero-stat-item">
+        <div class="hs-val red">2</div>
+        <div class="hs-lbl">即将到期</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset Count -->
+  <div class="card card-purple">
+    <div class="card-label">资产总数</div>
+    <div class="card-value">8</div>
+    <div class="card-sub">管理中的资产</div>
+  </div>
+
+  <!-- Supplier -->
+  <div class="card card-green">
+    <div class="card-label">供应商</div>
+    <div class="card-value">1</div>
+    <div class="card-sub">已收录</div>
+  </div>
+
+  <!-- Asset Types (wide) -->
+  <div class="card card-wide">
+    <div class="card-label">资产分类</div>
+    <div class="type-list">
+      <div class="type-row">
+        <div class="type-dot" style="background:#6366F1"></div>
+        <div class="type-info">
+          <div class="type-name">物理资产</div>
+          <div class="type-bar-track"><div class="type-bar-fill" style="width:62.5%;background:#6366F1"></div></div>
+        </div>
+        <div class="type-count">5</div>
+      </div>
+      <div class="type-row">
+        <div class="type-dot" style="background:#A855F7"></div>
+        <div class="type-info">
+          <div class="type-name">数字资产</div>
+          <div class="type-bar-track"><div class="type-bar-fill" style="width:12.5%;background:#A855F7"></div></div>
+        </div>
+        <div class="type-count">1</div>
+      </div>
+      <div class="type-row">
+        <div class="type-dot" style="background:#EC4899"></div>
+        <div class="type-info">
+          <div class="type-name">订阅</div>
+          <div class="type-bar-track"><div class="type-bar-fill" style="width:25%;background:#EC4899"></div></div>
+        </div>
+        <div class="type-count">2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expiring Alert -->
+  <div class="card card-red">
+    <div class="card-label">即将到期</div>
+    <div class="card-value" style="font-size:48px">2</div>
+    <div class="card-sub">需要关注</div>
+  </div>
+
+  <!-- Subscription (wide) -->
+  <div class="card card-wide">
+    <div class="card-label">订阅月费</div>
+    <div class="sub-amount">¥298</div>
+    <div class="card-sub">2 项订阅的月度费用</div>
+    <div class="sub-breakdown">
+      <div class="sub-item">
+        <div class="si-val">¥3,576</div>
+        <div class="si-lbl">年化预估</div>
+      </div>
+      <div class="sub-item">
+        <div class="si-val">5.7%</div>
+        <div class="si-lbl">占总值比</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Status -->
+  <div class="card">
+    <div class="card-label">使用状态</div>
+    <div class="status-ring">
+      <svg viewBox="0 0 100 100">
+        <circle class="track" cx="50" cy="50" r="40"/>
+        <circle class="fill-ring" cx="50" cy="50" r="40"/>
+      </svg>
+      <div class="status-center-text">
+        <div class="status-num">8</div>
+        <div class="status-lbl">使用中</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Score -->
+  <div class="card">
+    <div class="card-label">健康度</div>
+    <div class="health-score">75</div>
+    <div class="health-bar">
+      <div class="health-segment" style="background:#6366F1;flex:3"></div>
+      <div class="health-segment" style="background:#A855F7;flex:1"></div>
+      <div class="health-segment" style="background:#F3F4F6;flex:0.5"></div>
+    </div>
+    <div class="health-detail">
+      <span>正常 <span class="hd-val">8</span></span>
+      <span>风险 <span class="hd-val" style="color:#EF4444">2</span></span>
+    </div>
+  </div>
+
+  <!-- Monthly Trend (wide) -->
+  <div class="card card-wide">
+    <div class="card-label">月度趋势</div>
+    <div class="mini-chart">
+      <div class="mini-bar" style="height:40%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:55%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:45%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:65%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:80%;background:#6366F1"></div>
+      <div class="mini-bar" style="height:72%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:60%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:75%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:68%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:85%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:78%;background:#E0E7FF"></div>
+      <div class="mini-bar" style="height:90%;background:linear-gradient(180deg,#6366F1,#A855F7)"></div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="card">
+    <div class="card-label">未读提醒</div>
+    <div class="notif-list">
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <span class="notif-text">订阅即将到期</span>
+        <span class="notif-time">2h</span>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <span class="notif-text">续费提醒</span>
+        <span class="notif-time">5h</span>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <span class="notif-text">保修到期</span>
+        <span class="notif-time">1d</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
