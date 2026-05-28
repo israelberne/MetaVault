@@ -218,10 +218,10 @@ client/src/
 │   │   ├── SupplierDetail.tsx  # 供应商详情
 │   │   └── SupplierForm.tsx    # 供应商表单
 │   ├── dashboard/
-│   │   ├── Dashboard.tsx       # 仪表盘主组件（6格统计条+状态板块+甘特+日历+提醒）
-│   │   ├── GanttTimeline.tsx   # SVG甘特时间轴（近60天，制图学风格）
-│   │   ├── MiniCalendar.tsx    # 日历组件（年月日跳转+事件蓝/红点标记）
-│   │   └── [内联] ReminderPanel / StatusBoard  # 提醒建议面板 / 资产状态板块
+│   │   ├── Dashboard.tsx       # 仪表盘主组件（6格统计条+类型分布条+甘特+日历+提醒）
+│   │   ├── GanttTimeline.tsx   # 到期热力条（近60天，SVG制图学风格）
+│   │   ├── MiniCalendar.tsx    # 日历组件（年月跳转+类型色点标记）
+│   │   └── [内联] ReminderPanel / TypeDistribution / MonthlyExpirySummary
 │   ├── import/
 │   │   └── ImportWizard.tsx    # 导入向导（上传→预览→映射→导入）
 │   ├── export/

@@ -22,7 +22,7 @@
     hooks/        React Query hooks
     lib/          API 封装（api-client + api-*）
     types/        TypeScript 类型
-    components/dashboard/  仪表盘子组件（GanttTimeline + MiniCalendar + ReminderPanel + StatusBoard）
+    components/dashboard/  仪表盘子组件（GanttTimeline + MiniCalendar + ReminderPanel + TypeDistribution + MonthlyExpirySummary）
 /server       - Node.js后端（Express + better-sqlite3）
   src/
     db/           数据库初始化（init.sql + init.ts）
@@ -68,7 +68,7 @@
 - 资产关联（depends_on / contains / bound_to / related_to，详情页可添加/移除）
 - 提醒系统（8 种类型，启动时 + 每小时自动扫描）
 - Web Push 通知（VAPID，浏览器推送）
-- 统计仪表盘（6格统计条 + 资产状态板块 + 甘特时间轴 + 日历 + 提醒/建议区域，卡片可点击跳转）
+- 统计仪表盘（6格统计条 + 类型分布条 + 到期热力条甘特 + 日历 + 提醒/建议区域，卡片可点击跳转）
 - 数据导入（CSV / Excel，字段映射 + 预览）
 - 数据导出（Excel 格式导出资产和供应商数据）
 - 全局搜索（Header 搜索栏驱动资产列表筛选）

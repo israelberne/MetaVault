@@ -18,7 +18,7 @@
 - 资产关联（depends_on / contains / bound_to / related_to）
 - 提醒系统（8 种类型，启动时 + 每小时自动扫描）
 - Web Push 通知（VAPID，浏览器推送）
-- 统计仪表盘（总览 / 订阅费用 / 健康度 + Recharts 图表，卡片和饼图可点击跳转）
+- 统计仪表盘（6格统计条 + 类型分布条 + 到期热力条 + 日历 + 提醒/建议，时空融合v2风格）
 - 数据导入（CSV / Excel，字段映射 + 预览）
 - 数据导出（Excel 格式导出资产和供应商数据）
 - 全局搜索（Header 搜索栏驱动资产列表筛选）+ URL 参数筛选（?type=&status=&sort=&q=）
@@ -76,7 +76,7 @@ e2e/              Playwright E2E 测试
   fixtures/       测试夹具（DB重置 + 种子数据）
   helpers/        测试辅助工具
   specs/          测试用例
-docs/             产品文档（PRD / 技术设计）
+docs/             产品文档（PRD / 技术设计 / 设计风格探索）
 ```
 
 ## 生产部署
